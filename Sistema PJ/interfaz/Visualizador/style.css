@@ -1,0 +1,125 @@
+/* STYLES */
+.scroll-container {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 250px;
+    background: #fafafa;
+}
+
+.pull_left {
+    float: left;
+}
+.pull_right {
+    float: right;
+}
+
+.userpic {
+    display: block;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.userpic .initials {
+    display: block;
+    color: #fff;
+    text-align: center;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.color_purple,
+.userpic5,
+.media_game .fill {
+    background-color: #9884e8;
+}
+
+.color_orange,
+.userpic8,
+.media_contact .fill {
+    background-color: #ff8c44;
+}
+
+body {
+    margin: 0;
+    font: 12px/18px 'Open Sans',"Lucida Grande","Lucida Sans Unicode",Arial,Helvetica,Verdana,sans-serif;
+    min-height: 90%;
+}
+
+html {
+    height: 90%;
+}
+
+.cuerpo{ 
+    background: #e5ddd5;
+}
+
+.gradiente{
+    text-align: center; 
+    font-size: x-large; 
+    background: linear-gradient(#009688 0%,#009688 130px, #d9dbd5 130px, #d9dbd5 100%);
+    color: white;
+}
+
+#ParrafoWhatsApp{
+    color: white;
+}
+
+.margenDeArriba {
+    margin-top: 10px;
+}
+
+.margenDeAbajo {
+    margin-bottom: 10px;
+}
+
+.centrar{
+    text-align: center;
+}
+
+.styleTextArea{
+    border: 1px solid #ccc;
+}
+/* Fondo oscuro del modal (Cubre toda la pantalla) */
+.modal {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    z-index: 1050; /* Asegura que esté por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%; /* Corregido: 100% de la pantalla */
+    height: 100%; /* Corregido: 100% de la pantalla */
+    overflow: auto; /* Permite hacer scroll en el fondo si es necesario */
+    background-color: rgba(0,0,0,0.5); /* Oscurecimiento suave */
+}
+
+/* Caja de Contenido del Modal (Adaptable y responsiva) */
+.modal-content {
+    background-color: #fefefe;
+    margin: 5vh auto; /* Margen superior dinámico para que no quede pegado arriba */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%; /* Se adapta a pantallas pequeñas (celulares) */
+    max-width: 850px; /* Tamaño ideal en computadoras */
+    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+    overflow-y: auto; /* Si el contenido es largo, aparecerá una barra de scroll interna */
+    border-radius: 8px; /* Bordes ligeramente redondeados para mejor estética */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra elegante */
+}
+
+/* El Botón de Cerrar */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
