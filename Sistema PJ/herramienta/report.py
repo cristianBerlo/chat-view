@@ -1,11 +1,9 @@
 from pathlib import Path
+import re
 
 def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat, lista_multimedia, lista_chat,
                    array_nombres, mapa_participantes,ruta, datos_formulario):
-    """
-    Genera el HTML completo del informe forense integrando los datos del formulario
-    y los elementos multimedia/hashes/participantes.
-    """
+    # funcion para generar el reporte html, la mayoria del codigo es la plantinlla. Hay varias funciones locales que sirven para la inyeccion de datos de las listas
     estilos_css = """
     <style>
         :root {
@@ -16,7 +14,16 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
             --text-color: #333333;
             --border-color: #dcdde1;
         }
-
+        .nav-bar {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f8f9fa;
+                padding: 10px 20px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                border: 1px solid var(--border-color);
+            }}
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--background-color);
@@ -293,8 +300,12 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
     </head>
     <body>
         <div class="container mt-4">
+        <div class="nav-bar">
+                <span><strong>Índice:</strong> Informe Pericial</span>
+                            <a href="chat_exportado"  class="nav-btn">Ver Chat Exportado 💬</a>
+            </div>
             <h1 class="text-center mb-4">Informe chat aportado</h1>
-            
+                        
             <!-- Datos Generales y de Causa -->
             <div class="card mb-3 p-3">
                 <h4>Detalles de la Causa y Peritaje</h4>
@@ -352,3 +363,70 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
         return {"status": "success", "ruta": os.path.abspath("reporte")}
     except Exception as e:
         return {"status": "error", "mensaje": str(e)}
+
+
+# funcion para generar el chat exportado
+def funExportar(inner_html,ruta):
+    pattern = r'/chats_extracted/[^/]+/fuentes/'
+    # Replace all instances with the shorter path
+    updated_html = re.sub(pattern, 'fuentes/', inner_html)
+    html_reporte = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat Exportado</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            /* Aca va el contenido del CSS */
+            .pull_left {{ float: left; }}
+            .pull_right {{ float: right; }}
+            .userpic {{ display: block; border-radius: 50%; overflow: hidden; }}
+            .userpic .initials {{ display: block; color: #fff; text-align: center; text-transform: uppercase; user-select: none; }}
+            .color_purple, .userpic5, .media_game .fill {{ background-color: #9884e8; }}
+            .color_orange, .userpic8, .media_contact .fill {{ background-color: #ff8c44; }}
+            body {{ margin: 0; font: 12px/18px 'Open Sans','Lucida Grande','Lucida Sans Unicode',Arial,Helvetica,Verdana,sans-serif; min-height: 90%; }}
+            html {{ height: 90%; }}
+            .cuerpo {{ background: #e5ddd5; }}
+            .gradiente {{
+                text-align: center;
+                font-size: x-large;
+                background: linear-gradient(#009688 0%,#009688 130px, #d9dbd5 130px, #d9dbd5 100%);
+                color: white;
+            }}
+            #ParrafoWhatsApp {{ color: white; }}
+            .margenDeArriba {{ margin-top: 10px; }}
+            .margenDeAbajo {{ margin-bottom: 10px; }}
+            .centrar {{ text-align: center; }}
+            .styleTextArea {{ border: 1px solid #ccc; }}
+        </style>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    </head>
+    <body>
+        <section class="h-screen flex overflow-hidden">
+            <a href="reporte" class="nav-back">Informe</a>
+
+            <div class="bg-white w-2/12 p-6"></div>
+            <div class="cuerpo w-8/12 overflow-auto">
+                <p class="gradiente px-20 py-6" style="text-align: center; font-size: xx-large;"> Conversación</p>
+                <hr></hr>
+                <br>
+                {updated_html}
+            </div>
+            <div class="bg-white w-2/12 p-6"></div>
+        </section>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    </body>
+    </html>
+        """
+    try:
+        ruta_completa = Path(ruta / "chat_exportado")
+        with open(ruta_completa, "w", encoding="utf-8") as f:
+            f.write(html_reporte)
+        return {"status": "success", "ruta": os.path.abspath("chat_exportado")}
+    except Exception as e:
+        return {"status": "error", "mensaje": str(e)}
+
+

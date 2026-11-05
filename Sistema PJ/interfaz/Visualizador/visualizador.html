@@ -24,188 +24,172 @@
 
 </head>
 <body>
-    <section class="h-screen flex overflow-hidden">
+  <section class="h-screen flex overflow-hidden">
 
-        <div class="bg-white w-3/12 p-6">
+    <div class="bg-white w-3/12 p-6 flex flex-col h-full">
+        <!-- Navegación de Pestañas -->
+        <ul class="nav nav-tabs mb-3" id="leftTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-xs font-weight-bold" id="tab-chat" data-bs-toggle="tab" data-bs-target="#content-chat" type="button" role="tab" aria-controls="content-chat" aria-selected="true">Chat</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-xs font-weight-bold" id="tab-participantes" data-bs-toggle="tab" data-bs-target="#content-participantes" type="button" role="tab" aria-controls="content-participantes" aria-selected="false">Participantes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-xs font-weight-bold" id="tab-informe" data-bs-toggle="tab" data-bs-target="#content-informe" type="button" role="tab" aria-controls="content-informe" aria-selected="false">Informe</button>
+            </li>
+        </ul>
 
-            <h3 class="centrar text-2xl mb-2 m-1"> Funcionalidades </h3>
-            <br>
-            <button id="Archivo" onclick="open_file()" class="btn btn-success btn-sm text-sm">Seleccione el archivo</button>
-            <select id="app" name="app" class="form-select form-select-lg mb-3" style="font-size: 1.1rem; padding: 10px;">
-                            <option value="whatsapp">whatsapp</option>
-            </select>
+        <!-- Contenedor de Contenidos -->
+        <div class="tab-content flex-grow-1 overflow-auto" id="tabsContent">
 
-            <textarea id="contenido" cols="30" rows="4" class="styleTextArea margenDeArriba margenDeAbajo form-control rounded-0 text-sm" readonly="readonly"></textarea>
-            
-            <label class="m-1 h5 text-sm"> Filtrar por Fecha</label>
+            <!-- PESTAÑA 1: Chat -->
+            <div class="tab-pane fade show active" id="content-chat" role="tabpanel" aria-labelledby="tab-chat">
+                <h3 class="centrar text-xl mb-2 m-1"> Chat </h3>
+                <br>
+                <button id="Archivo" onclick="open_file()" class="btn btn-success btn-sm text-sm w-100 mb-3">Seleccione el archivo</button>
 
-            <input type="text" name="Fecha" id="Fecha" class="margenDeAbajo form-control" value="">
+                <label class="form-label text-sm font-weight-bold">Aplicación</label>
+                <select id="app" name="app" class="form-select form-select-lg mb-3" style="font-size: 1.1rem; padding: 10px;">
+                    <option value="whatsapp">whatsapp</option>
+                </select>
 
-            <div id="scrollFechas" class="scroll-container margenDeAbajo">
-                <div class="item" style="color: #888; font-size: 0.85rem;">No hay fechas seleccionadas</div>
-            </div>
-            <button id="deleteBtn" type="button" class="m-1 btn btn-outline-danger btn-sm text-sm margenDeAbajo">Eliminar</button>
-            <br>
-            <br>
+                <textarea id="contenido" cols="30" rows="4" class="styleTextArea margenDeArriba margenDeAbajo form-control rounded-0 text-sm w-100" readonly="readonly"></textarea>
 
+                <label class="m-1 h5 text-sm"> Filtrar por Fecha</label>
+                <input type="text" name="Fecha" id="Fecha" class="margenDeAbajo form-control" value="">
 
-            <div class="centrar">
-                <label class="m-1 h5 text-sm"> Iniciar Análisis </label>
-            </div>
+                <div id="scrollFechas" class="scroll-container margenDeAbajo">
+                    <div class="item" style="color: #888; font-size: 0.85rem;">No hay fechas seleccionadas</div>
+                </div>
 
-            <button id="filtrarArchivosBtn" type="button" class="m-1 btn btn-outline-primary btn-sm text-sm" disabled>Descargar informacion filtrada</button>
-            <button id="formBtn" type="button" class="btn btn-outline-primary text-sm" disabled>Abrir formulario</button>
-            <button id="participantesBtn" type="button" class="btn btn-outline-primary text-sm" disabled>Abrir panel participantes</button>
+                <button id="deleteBtn" type="button" class="m-1 btn btn-outline-danger btn-sm text-sm margenDeAbajo">Eliminar</button>
+                <br><br>
 
-            <div class="centrar">
-                <button type="button" onclick="start_analysis()" class="btn btn-outline-primary text-sm" id="Comenzar" disabled>Iniciar</button>
-                <button type="button" onclick="recargarMensajes()" class="btn btn-outline-primary text-sm" id="mostrar" disabled >Mostrar</button>
-
-            </div>
-            <br>
-            
-            <div class="centrar">
-                <button type="button" class="btn btn-outline-primary text-sm" id="idExportar">Exportar Chat</button>
-            </div>
-
-        </div>
-        
-        <div class="cuerpo w-9/12">
-            <!-- Header -->
-            <div class="gradiente px-20 py-6 border-b">
-                <p id="ParrafoWhatsApp"> Conversación </p>
-            </div>
-            
-            <!-- Chat propiamente dicho -->
-            <div class="cuerpo px-20 py-6 overflow-auto h-5/6" id="idContenido">
-                <!-- Carga de mensajes en forma dinamica -->
-            </div>
-            
-        </div>
-        <!-- Pop-up Modal Nativo -->
-<dialog id="modalCarpeta" style="padding: 25px; border-radius: 10px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; max-width: 400px;">
-    <p id="modalMensaje" style="margin-bottom: 20px; font-size: 1.1em; color: #333; font-family: sans-serif;"></p>
-    <button id="btnModalSeleccionar" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Elegir Carpeta</button>
-</dialog>
-
-<!-- Input de carpetas oculto -->
-<input type="file" id="folderInput" webkitdirectory style="display:none;">
-
-            <input type="file" id="folderInput" webkitdirectory style="display:none;">
-            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
-            <input type="file" id="fileInput"  multiple style="display: none;">
-        <div id="participantes" class="modal">
-        <div class="modal-content">
-            <span class="close close-part">&times;</span>
-            <label class="m-1 h5 text-sm"> Seleccione el actor titular de la cuenta</label>
-            <br>
-
-            <select id="Nombres_Personas" class="margenDeAbajo m-1 form-select form-select-sm" aria-label=".form-select-sm example">
-                <!-- Aca insertaria las personas en forma dinamica -->
-            </select>
-
-            <label class="m-1 h5 text-sm"> Ingrese más información de los participantes</label>
-            <br>
-            <div class="input-group mb-3">
-                <span class="input-group-text text-sm" id="basic-addon1">Text</span>
-                <input id="InputTexto" type="text" class="m-1 form-control text-sm" placeholder="Escriba aquí" aria-label="Username" aria-describedby="basic-addon1">
+                <div class="centrar">
+                    <button type="button" onclick="recargarMensajes()" class="btn btn-outline-primary text-sm" id="mostrar">Recargar chat</button>
+                    <br><br>
+                    <div class="centrar">
+                        <button type="button" onclick="exportarChat()" class="btn btn-outline-primary text-sm" id="idExportar">Exportar Chat</button>
+                    </div>
+                </div>
             </div>
 
-            <textarea id="contenidoTextArea" cols="30" rows="2" class="styleTextArea margenDeAbajo form-control rounded-0 text-sm" readonly="readonly"></textarea>
+            <!-- PESTAÑA 2: Participantes -->
+            <div class="tab-pane fade" id="content-participantes" role="tabpanel" aria-labelledby="tab-participantes">
+                <h3 class="centrar text-xl mb-2 m-1"> Participantes </h3>
+                <br>
+                <label class="m-1 h5 text-sm"> Seleccione el actor titular de la cuenta</label>
+                <br>
 
-            <button id="BtnAgregar" type="button" class="m-1 btn btn-outline-primary btn-sm text-sm">Agregar</button>
-            <br>
+                <select id="Nombres_Personas" class="margenDeAbajo m-1 form-select form-select-sm" aria-label=".form-select-sm example">
+                    <!-- Aca insertaria las personas en forma dinamica -->
+                </select>
+
+                <label class="m-1 h5 text-sm"> Ingrese más información de los participantes</label>
+                <br>
+                <div class="input-group mb-3">
+                    <span class="input-group-text text-sm" id="basic-addon1">Text</span>
+                    <input id="InputTexto" type="text" class="m-1 form-control text-sm" placeholder="Escriba aquí" aria-label="Username" aria-describedby="basic-addon1">
+                </div>
+
+                <textarea id="contenidoTextArea" cols="30" rows="2" class="styleTextArea margenDeAbajo form-control rounded-0 text-sm" readonly="readonly"></textarea>
+
+                <button id="BtnAgregar" type="button" class="m-1 btn btn-outline-primary btn-sm text-sm">Agregar</button>
+                <br>
 
 
-        </div>
-        </div>
-        <div id="formulario" class="modal">
-        <div class="modal-content">
-        <span class="close close-form">&times;</span>
-            <form id="formReporte">
-                <h4 id="etq" class="mb-3 text-center font-weight-bold">Generación de Reporte</h4>
+                <hr class="my-3">
+
+
+            </div>
+
+            <!-- PESTAÑA 3: Informe -->
+            <div class="tab-pane fade" id="content-informe" role="tabpanel" aria-labelledby="tab-informe">
+                <h3 class="centrar text-xl mb-2 m-1"> Informe </h3>
+                <br>
+                <form id="formReporte">
+                    <h4 id="etq" class="mb-3 text-center font-weight-bold">Generación de Reporte</h4>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputPEX" class="form-label font-weight-bold">Numero de causa:</label>
+                                <input type="text" id="inputPEX" class="form-control form-control-sm" placeholder="Numero de causa" required>
+                            </div>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputFechaReporte" class="form-label font-weight-bold">Fecha del aporte:</label>
+                                <input type="date" id="inputFechaReporte" class="form-control form-control-sm" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <label class="form-label font-weight-bold">Perito:</label>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputNombrePerito" class="form-label font-weight-bold">Nombre:</label>
+                                <input type="text" id="inputNombrePerito" class="form-control form-control-sm" placeholder="Nombre del perito">
+                                <br>
+                                <label for="inputDependenciaPerito" class="form-label font-weight-bold">Dependencia:</label>
+                                <input type="text" id="inputDependenciaPerito" class="form-control form-control-sm" placeholder="Dependencia del perito">
+                            </div>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputApellidoPerito" class="form-label font-weight-bold">Apellido:</label>
+                                <input type="text" id="inputApellidoPerito" class="form-control form-control-sm" placeholder="Apellido del perito">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <label class="form-label font-weight-bold">Aportante:</label>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputNombreAportante" class="form-label font-weight-bold">Nombre:</label>
+                                <input type="text" id="inputNombreAportante" class="form-control form-control-sm" placeholder="Nombre del aportante">
+                                <br>
+                                <label for="inputDNIAportante" class="form-label font-weight-bold">DNI:</label>
+                                <input type="text" id="inputDNIAportante" class="form-control form-control-sm" placeholder="DNI del aportante">
+                            </div>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputApellidoAportante" class="form-label font-weight-bold">Apellido:</label>
+                                <input type="text" id="inputApellidoAportante" class="form-control form-control-sm" placeholder="Apellido del aportante">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="row">
+                            <label class="form-label font-weight-bold">Dispositivo:</label>
+                            <div class="col-md-6 mb-2 mb-md-0">
+                                <label for="inputMarcaDispositivo" class="form-label font-weight-bold">Marca:</label>
+                                <input type="text" id="inputMarcaDispositivo" class="form-control form-control-sm" placeholder="Marca del dispositivo">
+                                <br>
+                                <label for="inputImeiDispositivo" class="form-label font-weight-bold">Imei:</label>
+                                <input type="text" id="inputImeiDispositivo" class="form-control form-control-sm" placeholder="Imei">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputModeloDispositivo" class="form-label font-weight-bold">Modelo:</label>
+                                <input type="text" id="inputModeloDispositivo" class="form-control form-control-sm" placeholder="Modelo del dispositivo">
+                            </div>
+                        </div>
+                    </div>
+                              <hr class="my-3">
 
                 <div class="mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-2 mb-md-0">
-                            <label for="inputPEX" class="form-label font-weight-bold">Numero de causa:</label>
-                            <input type="text" id="inputPEX" class="form-control form-control-sm" placeholder="Numero de causa" required>
-                        </div>
-                        <div class="col-md-6 mb-2 mb-md-0">
-                            <label for="inputFechaReporte" class="form-label font-weight-bold">Fecha del aporte:</label>
-                            <input type="date" id="inputFechaReporte" class="form-control form-control-sm" required>
-                        </div>
+                    <label class="form-label font-weight-bold">Participantes:</label>
+                    <div id="scrollParticipantes" class="scroll-container margenDeAbajo">
+                        <div class="item text-muted" style="font-size: 0.85rem;">No hay participantes</div>
                     </div>
                 </div>
-
-                    <div class="mb-3">
-                <div class="row">
-                    <label class="form-label font-weight-bold">Perito:</label>
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <label for="inputNombrePerito" class="form-label font-weight-bold">Nombre:</label>
-                        <input type="text" id="inputNombrePerito" class="form-control form-control-sm" placeholder="Nombre del perito">
-                        <br>
-                        <label for="inputDependenciaPerito" class="form-label font-weight-bold">Dependencia:</label>
-                        <input type="text" id="inputDependenciaPerito" class="form-control form-control-sm" placeholder="Dependencia del perito">
-                    </div>
-                        <div class="col-md-6 mb-2 mb-md-0">
-                        <label for="inputApellidoPerito" class="form-label font-weight-bold">Apellido:</label>
-                        <input type="text" id="inputApellidoPerito" class="form-control form-control-sm" placeholder="Apellido del perito">
-                    </div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <div class="row">
-                    <label class="form-label font-weight-bold">Aportante:</label>
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <label for="inputNombreAportante" class="form-label font-weight-bold">Nombre:</label>
-                        <input type="text" id="inputNombreAportante" class="form-control form-control-sm" placeholder="Nombre del aportante">
-                        <br>
-                        <label for="inputDNIAportante" class="form-label font-weight-bold">DNI:</label>
-                        <input type="text" id="inputDNIAportante" class="form-control form-control-sm" placeholder="DNI del aportante">
-                    </div>
-                        <div class="col-md-6 mb-2 mb-md-0">
-                        <label for="inputApellidoAportante" class="form-label font-weight-bold">Apellido:</label>
-                        <input type="text" id="inputApellidoAportante" class="form-control form-control-sm" placeholder="Apellido del aportante">
-                    </div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <div class="row">
-                <label  class="form-label font-weight-bold">Dispositivo:</label>
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <label for="inputMarcaDispositivo" class="form-label font-weight-bold">Marca:</label>
-                        <input type="text" id="inputMarcaDispositivo" class="form-control form-control-sm" placeholder="Marca del dispositivo">
-                        <br>
-                        <label for="inputImeiDispositivo" class="form-label font-weight-bold">Imei:</label>
-                        <input type="text" id="inputImeiDispositivo" class="form-control form-control-sm" placeholder="Imei">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="inputModeloDispositivo" class="form-label font-weight-bold">Modelo:</label>
-                        <input type="text" id="inputModeloDispositivo" class="form-control form-control-sm" placeholder="Modelo del dispositivo">
-                    </div>
-                </div>
-            </div>
-
-                    <hr class="my-3">
-
-                    <div class="mb-3">
-                        <label class="form-label font-weight-bold">Participantes:</label>
-                        <div id="scrollParticipantes" class="scroll-container margenDeAbajo">
-                            <div class="item text-muted" style="font-size: 0.85rem;">No hay participantes</div>
-                        </div>
-                    </div>
-                <hr class="my-3">
-                    <!-- Sección de Capturas -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
+                        <div class="col-md-6">
                         <label class="form-label font-weight-bold">Capturas participantes</label>
                         <div id="scrollCapturasParticipantes" class="scroll-container margenDeAbajo">
                             <div class="item text-muted" style="font-size: 0.85rem;">No hay capturas</div>
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <button id="agregarCapturaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar captura</button>
-                            <button id="eliminarCapturaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar captura</button>
+                            <button id="agregarCapturaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarCapturaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
                         </div>
                     </div>
 
@@ -215,85 +199,45 @@
                             <div class="item text-muted" style="font-size: 0.85rem;">No hay capturas</div>
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <button id="agregarCapturaChatBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar captura</button>
-                            <button id="eliminarCapturaChatBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar captura</button>
+                            <button id="agregarCapturaChatBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarCapturaChatBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
                         </div>
                     </div>
-                </div>
+                           <hr class="my-3">
 
-                <hr class="my-3">
-
-                <div class="mb-4">
-                    <label class="form-label font-weight-bold">Multimedias: </label>
-                    <div id="scrollMultimedia" class="scroll-container margenDeAbajo">
-                        <div class="item text-muted" style="font-size: 0.85rem;">No hay elementos</div>
+                    <div class="mb-4">
+                        <label class="form-label font-weight-bold">Multimedias: </label>
+                        <div id="scrollMultimedia" class="scroll-container margenDeAbajo">
+                            <div class="item text-muted" style="font-size: 0.85rem;">No hay elementos</div>
+                        </div>
+                        <input type="text" id="inputDescripcionMultimedia" class="form-control form-control-sm mt-2" placeholder="Descripcion">
+                        <br>
+                        <button id="agregarMultimediaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar multimedia</button>
+                        <button id="eliminarMultimediaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar multimedia</button>
                     </div>
-                    <input type="text" id="inputDescripcionMultimedia" class="form-control form-control-sm mt-2" placeholder="Descripcion">
-                    <br>
-                    <button id="agregarMultimediaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar multimedia</button>
-                    <button id="eliminarMultimediaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar multimedia</button>
-                </div>
+                    <div class="text-end mb-2">
+                        <button id="generarReporteBtn" onclick="generarReporte(event)" class="btn btn-success btn-sm text-sm">Generar reporte</button>
+                    </div>
+                </form>
+            </div>
 
-                <hr class="my-3">
-
-                <div class="text-end">
-                    <!-- Cambiamos a type="submit" para que controle el envío del formulario -->
-                    <button id="generarReporteBtn"  onclick="generarReporte(event)" class="btn btn-success btn-sm text-sm">Generar reporte</button>
-
-                </div>
-
-                <div class="text-end">
-
-                    <!-- Cambiamos a type="submit" para que controle el envío del formulario -->
-                    <button id="guardarBorradorBtn" type="button" class="btn btn-success btn-sm text-sm">Guardar borrador reporte</button>
-                    <button id="cargarBorradorBtn" type="button" class="btn btn-success btn-sm text-sm">Cargar borrador reporte</button>
-
-                </div>
-            </form>
         </div>
-        </div>
-    </section>
+
+    </div>
+            <div class="cuerpo w-9/12">
+            <!-- Header -->
+            <div class="gradiente px-20 py-6 border-b">
+                <p id="ParrafoWhatsApp"> Conversación </p>
+            </div>
+
+            <!-- Chat propiamente dicho -->
+            <div class="cuerpo px-20 py-6 overflow-auto h-5/6" id="idContenido">
+                <!-- Carga de mensajes en forma dinamica -->
+            </div>
+</section>
     <script type="text/javascript">
         window.fechas = [];
         let  selectedIndex = null;
-        const modalForm = document.getElementById("formulario");
-        const btnForm = document.getElementById("formBtn");
-        const spanForm = modalForm.querySelector(".close");
-
-        btnForm.onclick = function() {
-            modalForm.style.display = "block";
-        }
-
-        spanForm.onclick = function() {
-            modalForm.style.display = "none";
-        }
-
-
-        // --- CONFIGURACIÓN MODAL 2: PARTICIPANTES ---
-        const modalPart = document.getElementById("participantes");
-        const btnPart = document.getElementById("participantesBtn");
-        const spanPart = modalPart.querySelector(".close");
-
-        btnPart.onclick = function() {
-            modalPart.style.display = "block";
-        }
-
-        spanPart.onclick = function() {
-            modalPart.style.display = "none";
-        }
-
-
-        // --- CIERRE GLOBAL AL HACER CLIC FUERA DE CUALQUIER MODAL ---
-        window.onclick = function(event) {
-            if (event.target === modalForm) {
-                modalForm.style.display = "none";
-            }
-            if (event.target === modalPart) {
-                modalPart.style.display = "none";
-            }
-        }
-
-
 
     function renderList(scrollV, lista, currentIndex, onItemClick) {
     const scroll = document.getElementById(scrollV);
@@ -403,7 +347,6 @@ document.getElementById('deleteBtn').addEventListener('click', () => {
 </script>
 
     <script src="/visualizador/visualizador.js" type="text/javascript"></script>
-    <script src="/visualizador/reportes.js" type="text/javascript"></script>
 
 </body>
 </html>

@@ -166,7 +166,7 @@ function MensajesDinamicos(chatFolderName, id_div, iniciales1, iniciales2, msjDe
             if(ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto === "") // No agrego texto, pero encuentra un nombre 
                 mb2.textContent = `${nombre}`; // Nombre sin agregar info 
             else
-                mb2.textContent = `${nombre}` + " - "+ ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto; // Nombre agregando info. 
+                mb2.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto; // Nombre agregando info.
         }else{
             mb2.textContent = `${mensaje}`; // Mensaje del Sistema 
         }
@@ -669,8 +669,17 @@ function CargarMensajesFront(path){
         let archivoAux = ArrayJSON[index].NameFileWhitExtension;
         let mensaje = ArrayJSON[index].Mensaje;
         let fechaYhora = ArrayJSON[index].Fecha +" "+ArrayJSON[index].Hora;
+        if(window.fechas.length>0){
+            const isWithinAnyInterval = window.fechas.some(interval =>
+        toMs( ArrayJSON[index].Fecha) >= toMs(interval.start) && toMs( ArrayJSON[index].Fecha) <= toMs(interval.end)
+        );
+        if (isWithinAnyInterval) {
+            MensajesDinamicos(path, id_div, iniciales1, iniciales2, msjDelSistema, nombre, archivo, archivoAux, mensaje, fechaYhora);
+        }
+        }else{
+            MensajesDinamicos(path,id_div,iniciales1,iniciales2,msjDelSistema,nombre,archivo,archivoAux,mensaje,fechaYhora);
 
-        MensajesDinamicos(path,id_div,iniciales1,iniciales2,msjDelSistema,nombre,archivo,archivoAux,mensaje,fechaYhora);
+        }
 }
 }
 
@@ -708,25 +717,15 @@ btnAgregar.addEventListener("click",() =>{
         }
 
     }
-    
     InputText.value = "";
 
     console.log(ArrayNameyText);
         
 });
 
-function open_file() {
-    const result = pywebview.api.open_file()
-   document.getElementById('formBtn').disabled =     result.res;
-    document.getElementById('participantesBtn').disabled =     result.res;
-    document.getElementById('mostrar').disabled     = result.res;
-    document.getElementById('Comenzar').disabled     = result.res;
-}
-
-async function  start_analysis() {
-    const app = document.getElementById("app");
-    const selection = app.value;
-    const result =  await pywebview.api.start_analyzer(selection, window.fechas);
+// funcion para selecciona y parsear un txt o archivo comprimido.
+async function open_file() {
+    const result = await pywebview.api.open_file();
     let ArrayParaNombres = result.json;
     nombres = GuardarNombres(ArrayParaNombres);
     ArrayJSON = result.json;
@@ -735,12 +734,13 @@ async function  start_analysis() {
     if(!nombreSeleccionado){
             nombreSeleccionado = document.getElementById("Nombres_Personas").options[0].value;
     }
-    Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Analisis finalizado',
-        })
+    let id = document.getElementById("idContenido");
+     while(id.firstChild) {
+        id.removeChild(id.firstChild);
+    }
+        CargarMensajesFront(jsonPath);
 }
+
 
 function recargarMensajes(){
     let id = document.getElementById("idContenido");
@@ -750,7 +750,7 @@ function recargarMensajes(){
         CargarMensajesFront(jsonPath);
 }
 
-document.getElementById('formBtn').addEventListener('click', () => {
+document.getElementById('tab-informe').addEventListener('click', () => {
 
     renderList("scrollParticipantes", ArrayNameyText.map(obj => Object.values(obj)[1]), selectedIndex, (nombreParticipante, index) => {
         selectedIndex = index;
@@ -792,9 +792,19 @@ const datosFormulario = {
         modelo: document.getElementById('inputModeloDispositivo').value,
         imei: document.getElementById('inputImeiDispositivo').value
     };
-
-    let res = await pywebview.api.gen_repo(perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres);
+    recargarMensajes(); //Llamo a la funcion de recargar mensajes por si el usuario ingreso nuevas fechas o cambio nombres antes de realizar la exportacion
+    // podria tener una variable que guarde el ultimo cambio o algo del estilo y pregunte si hay uno nuevo para no recargar cuando no es necesario
+    // Posible optimizacion
+    let divChat = document.getElementById("idContenido").innerHTML;
+    let res = await pywebview.api.gen_repo(perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
 }
+
+async function exportarChat(){
+    recargarMensajes();
+    let divChat = document.getElementById("idContenido").innerHTML;
+    let res = await pywebview.api.export_chat(window.fechas,divChat)
+}
+
 async function agregarArrayDesdeArchivo(scrollId,array,onIndexChange,mode, loc){
  let res = await pywebview.api.add_other(mode, loc);
  if(res.files.length>0){
