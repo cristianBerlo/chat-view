@@ -46,7 +46,7 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 - SweetAlert2
 - Python 
 - Antlr4
-- Pywebview
+- Pyqt
 - Flask
 
 
