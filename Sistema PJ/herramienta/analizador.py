@@ -15,26 +15,6 @@ import os
 from pathlib import Path
 
 
-def create_zip(folder=None, file=None):
-
-    selection = window.FileDialog.SAVE(
-        save_filename="chat_comprimido.zip",
-        file_types=("ZIP files (*.zip)",)
-    )
-
-    zip_path = selection[0] if isinstance(selection, (list, tuple)) else selection
-    zip_path = os.path.splitext(zip_path)[0]
-
-    with ZipFile(zip_path, "w", ZIP_DEFLATED) as zipfile:
-
-        if folder:
-            for root, dirs, files in os.walk(folder):
-                for filename in files:
-                    full_path = os.path.join(root, filename)
-                    zipfile.write(full_path)
-
-        if file:
-            zipfile.write(file)
 
 def resource_path(relative_path):
     if getattr(sys, '_MEIPASS', False):
@@ -99,6 +79,28 @@ def extraer_zip(zip_path, project_root=None):
         zip.extractall(fuentes_dir)
     zip.close()
     return {"dir":chat_dir,"file":str(chat_dir / nombre_txt)}
+
+
+def create_zip(directory_path=None, file=None):
+
+    selection = window.create_file_dialog(
+        webview.FileDialog.SAVE, allow_multiple=False,         save_filename="chat_comprimido.zip",
+        file_types=("ZIP files (*.zip)",)
+    )
+    print(directory_path)
+    zip_path = selection[0] if isinstance(selection, (list, tuple)) else selection
+    zip_path = os.path.splitext(zip_path)[0]
+
+    with ZipFile(zip_path, 'w') as zipf:
+        for file_path in directory_path.rglob('*'):
+            if any(part.startswith('.') for part in file_path.relative_to(directory_path).parts):
+                continue
+            if file_path.is_file():
+                arcname = file_path.relative_to(directory_path.parent)
+                zipf.write(file_path, arcname)
+        if file:
+            zipf.write(file, file.name)
+
 
 class Api:
 
@@ -274,6 +276,11 @@ class Api:
                 if date_comp(json_msg.get("Fecha"), dates):
                     if json_msg.get("NameFileWhitExtension"):
                         kfile.append(json_msg.get("NameFileWhitExtension"))
+        else:
+            for json_msg in json:
+                if json_msg.get("NameFileWhitExtension"):
+                    kfile.append(json_msg.get("NameFileWhitExtension"))
+
         fuentes_dir = Path(self.dir) / "fuentes"
         for file in fuentes_dir.iterdir():
                 if file.is_file() and file.name not in kfile:
@@ -283,7 +290,7 @@ class Api:
                     except Exception as e:
                         print(f"No se pudo eliminar {file.name}: {e}")
         funExportar(html, self.dir)
-        create_zip(self.dir / "fuentes" , self.dir / "chat_exportado" )
+        create_zip(fuentes_dir , self.dir / "chat_exportado" )
 
 app = Flask(__name__)
 @app.route("/")
