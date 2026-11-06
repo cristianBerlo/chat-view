@@ -1,20 +1,20 @@
-from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 import antlr4
-import os
 import webview
 import hashlib
 from grammar.chatWhatsappLexer import chatWhatsappLexer
 from grammar.chatWhatsappParser import chatWhatsappParser
 from grammar.chatWhatsappParserVisitor import chatWhatsappParserVisitor
 from report import generateReport
+from report import funExportar
 from flask import Flask, send_from_directory
 from datetime import datetime
 import shutil
-
 import sys
 import os
 from pathlib import Path
+
+
 
 def resource_path(relative_path):
     if getattr(sys, '_MEIPASS', False):
@@ -80,42 +80,26 @@ def extraer_zip(zip_path, project_root=None):
     zip.close()
     return {"dir":chat_dir,"file":str(chat_dir / nombre_txt)}
 
-def analizar_txt(chat, dates, lexer_class, parser_class, visitor_class, dir):
-    # (txt de un chat, intervalos de tiempo) -> ( json con mensajes dentro de alguno de los intervalos)
-    # ademas de estos intervalos tambien se pide el lexer parser y visitor a usar
-    # de esta forma si en algun momento se expanden las gramaticas solo cambiaria con que se llaman
-    file = antlr4.FileStream(chat,encoding='utf-8')
-    lexer = lexer_class(file)
-    stream = antlr4.CommonTokenStream(lexer)
-    parser = parser_class(stream)
-    parse_tree = parser.chat()
-    visitor = visitor_class()
-    res = visitor.visit(parse_tree)
-    json = res.get("json", [])
-    txt = res.get("txt", [])
-    kfile = []
-    if dates:
-        kjson = []
-        with open(chat, "w") as f:
-            for txt_msg, json_msg in zip(txt,json):
-                if date_comp(json_msg.get("Fecha"),dates):
-                    f.write(txt_msg)
-                    kjson.append(json_msg)
-                    if json_msg.get("NameFileWhitExtension"):
-                        kfile.append( json_msg.get("NameFileWhitExtension"))
-        fuentes_dir = Path(dir) / "fuentes"
-        for file in fuentes_dir.iterdir():
-            if file.is_file() and file.name not in kfile:
-                try:
-                    file.unlink()
-                except Exception as e:
-                    print(f"No se pudo eliminar {file.name}: {e}")
-        return kjson
-    else:
-        for json_msg in  json:
-            if json_msg.get("NameFileWhitExtension"):
-                kfile.append(json_msg.get("NameFileWhitExtension"))
-    return {"json":json,"file":kfile}
+
+def create_zip(directory_path=None, file=None):
+
+    selection = window.create_file_dialog(
+        webview.FileDialog.SAVE, allow_multiple=False,         save_filename="chat_comprimido.zip",
+        file_types=("ZIP files (*.zip)",)
+    )
+
+    zip_path = selection[0] if isinstance(selection, (list, tuple)) else selection
+    zip_path = os.path.splitext(zip_path)[0]
+
+    with ZipFile(zip_path, 'w') as zipf:
+        for file_path in directory_path.rglob('*'):
+            if any(part.startswith('.') for part in file_path.relative_to(directory_path).parts):
+                continue
+            if file_path.is_file():
+                arcname = file_path.relative_to(directory_path.parent)
+                zipf.write(file_path, arcname)
+        if file:
+            zipf.write(file, file.name)
 
 
 class Api:
@@ -124,7 +108,7 @@ class Api:
         self._window = None
         self.selected_chat = None
         self.dir = None
-        self.files= None
+        self.zip = None
 
     def open_file_window(self, relative_path):
         absolute_path = os.path.join(self.dir, relative_path.lstrip("/"))
@@ -136,10 +120,12 @@ class Api:
             height=600
         )
 
-    def open_file(self):  #
+    def open_file(self,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):  #
+
         file_types = (
             'Compressed Files (*.zip;*.tar;*.gz;*.rar;*.7z)',
             'TXT (*.txt)',
+            'JSON (*.json)',
             'All files (*.*)'
         )
 
@@ -148,10 +134,8 @@ class Api:
             allow_multiple=False,
             file_types=file_types
         )
-
         path_str = result[0] if isinstance(result, (list, tuple)) else result
         path = Path(path_str)
-
         compressed_extensions = {'.zip', '.tar', '.gz', '.rar', '.7z', '.bz2', '.xz'}
 
         if path.suffix.lower() in compressed_extensions:
@@ -160,23 +144,23 @@ class Api:
                     res = extraer_zip(Path(path_str))
                     self.selected_chat = res.get("file")
                     self.dir = res.get("dir")
-                    return {"res": True}
+                    self.zip  = hashFiles([Path(path_str).name], self.dir, "Archivo comprido del chat")
+                    #guardo el hash del zip abierto
                     # Si me encuentro con un zip lo extraigo y retorno los datos del .txt
             except FileNotFoundError:
                 print("error al abrir el archivo")
                 return {"res":False}
+        # Parseo el archivo seleccionado  para generar el json
+        file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
+        lexer = lexer_class(file)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = parser_class(stream)
+        parse_tree = parser.chat()
+        visitor = visitor_class()
+        res = visitor.visit(parse_tree)
+        json = res.get("json")
+        return {"json":json, "res": True,   "path": self.dir.name}
 
-        self.selected_chat = path_str
-        return {"res": True}
-
-    def start_analyzer(self,mode, dates):
-        if mode == "whatsapp":
-            res = analizar_txt(self.selected_chat, dates, chatWhatsappLexer, chatWhatsappParser, chatWhatsappParserVisitor,self.dir)
-            self.files = res.get("file")
-            return {"json": res.get("json"),
-                    "path": self.dir.name}
-
-        return None
 
     #metodo para agregar una imagen a la lista
     def add_cap(self,target):
@@ -206,7 +190,7 @@ class Api:
             dest_dir.mkdir(parents=True, exist_ok=True)
             for file_path in result:
                 src_path = Path(file_path)
-                shutil.copy(src_path, dest_dir)
+                shutil.copy(src_path, dest_dir) #Copio los archivos seleccionados en el directorio objetivo
                 copied_files.append(src_path.name)
         return {"files": copied_files}
 
@@ -218,14 +202,95 @@ class Api:
         except Exception as e:
             return {"res": False}
 
-    def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres):
-        lista_hashes_multimedias_chat = hashFiles(self.files, self.dir / "fuentes","Multimedia chat")
+    #Metodo para la generacion del reporte
+    def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres,dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
+        # Parseo nuevamente el file para poder generar el txt filtrado y el json filtrado
+        file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
+        lexer = lexer_class(file)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = parser_class(stream)
+        parse_tree = parser.chat()
+        visitor = visitor_class()
+        res = visitor.visit(parse_tree)
+        json = res.get("json", [])
+        txt = res.get("txt", [])
+        kfile = []
+        # cuando voy a generar parseo nuevamente el file, lo hago para poder generar el json y txt podados.
+        #  evaluo mensaje a mensaje para determinar que archivos son conservados
+        if dates:
+            kjson = []
+            with open(self.selected_chat, "w") as f:
+                for txt_msg, json_msg in zip(txt, json):
+                    if date_comp(json_msg.get("Fecha"), dates):
+                        #escribo el txt filtrado
+                        f.write(txt_msg)
+                        kjson.append(json_msg)
+                        if json_msg.get("NameFileWhitExtension"):
+                            kfile.append(json_msg.get("NameFileWhitExtension"))
+            fuentes_dir = Path(self.dir) / "fuentes"
+            for file in fuentes_dir.iterdir():
+                if file.is_file() and file.name not in kfile:
+                    try:
+                        #elimino los archivos que no estan presententes en el json filtrado
+                        file.unlink()
+                    except Exception as e:
+                        print(f"No se pudo eliminar {file.name}: {e}")
+        else:
+            for json_msg in json:
+                if json_msg.get("NameFileWhitExtension"):
+                    kfile.append(json_msg.get("NameFileWhitExtension"))
+
+        #Calculo los hashes de todos los archivos alcanzados y los agregados
+        lista_hashes_multimedias_chat = self.zip or [] # or en caso de que la entrada haya sido un .txt en lugar de un comprimido
+        lista_hashes_multimedias_chat += hashFiles([Path(self.selected_chat).name],self.dir,"Txt del chat")
+        lista_hashes_multimedias_chat += hashFiles(kfile, self.dir / "fuentes","Multimedia chat")
         lista_hashes_multimedias_chat += hashFiles(lista_multimedia, self.dir / "adicionales","Multimedias agregados")
         lista_hashes_multimedias_chat += hashFiles(lista_chat, self.dir / "capturas_chat","Capturas chat")
         for nombre in array_nombres:
             lista_hashes_multimedias_chat += hashFiles(mapa_participantes.get(nombre), self.dir / f"capturas_{nombre}", "Capturas " + nombre)
-            generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat, lista_multimedia, lista_chat, array_nombres, mapa_participantes, self.dir , datos_formulario)
+
+        #genero los html del reporte
+        generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat, lista_multimedia, lista_chat,
+                       array_nombres, mapa_participantes, self.dir, datos_formulario)
+        funExportar(html, self.dir)
+        #Creo una ventana para preguntarle al usuario donde guardar el .zip
+        create_zip(self.dir)
+
         return {"hashes":lista_hashes_multimedias_chat}
+
+    def export_chat(self, dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
+
+        file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
+        lexer = lexer_class(file)
+        stream = antlr4.CommonTokenStream(lexer)
+        parser = parser_class(stream)
+        parse_tree = parser.chat()
+        visitor = visitor_class()
+        res = visitor.visit(parse_tree)
+        json = res.get("json", [])
+        kfile = []
+        # cuando voy a generar parseo nuevamente el file, lo hago para poder generar el json y txt podados.
+        #  evaluo mensaje a mensaje para determinar que archivos son conservados
+        if dates:
+            for  json_msg in  json:
+                if date_comp(json_msg.get("Fecha"), dates):
+                    if json_msg.get("NameFileWhitExtension"):
+                        kfile.append(json_msg.get("NameFileWhitExtension"))
+        else:
+            for json_msg in json:
+                if json_msg.get("NameFileWhitExtension"):
+                    kfile.append(json_msg.get("NameFileWhitExtension"))
+
+        fuentes_dir = Path(self.dir) / "fuentes"
+        for file in fuentes_dir.iterdir():
+                if file.is_file() and file.name not in kfile:
+                    try:
+                        # elimino los archivos que no estan presententes en el json filtrado
+                        file.unlink()
+                    except Exception as e:
+                        print(f"No se pudo eliminar {file.name}: {e}")
+        funExportar(html, self.dir)
+        create_zip(fuentes_dir , self.dir / "chat_exportado" )
 
 app = Flask(__name__)
 @app.route("/")
@@ -252,5 +317,5 @@ if __name__ == '__main__':
     )
     api._window = window
     webview.start(
-        debug=False
+        debug=True
     )
