@@ -12,6 +12,21 @@ let selectedParticipanteCapIndex = null;
 let nombreSeleccionado;
 let indexMensajes=0;
 
+function callBackPromise(method, ...args) {
+
+    return new Promise((resolve, reject) => {
+
+        if (!api || typeof api[method] !== "function") {
+            reject(new Error("API no disponible"));
+            return;
+        }
+
+        api[method](...args, resolve);
+
+    });
+
+}
+
 document.getElementById("Nombres_Personas").addEventListener("change", (event) => {
     nombreSeleccionado = document.getElementById("Nombres_Personas").options[document.getElementById("Nombres_Personas").selectedIndex].value;
     if(!nombreSeleccionado){
@@ -80,7 +95,6 @@ function CargarNombresFront(nombres){
         option.textContent = `${nombres[index]}`;
         $nombresSelect.appendChild(option);
     }
-    
     const sinactor = document.createElement('option');
     sinactor.textContent = "Sin actor Principal";
     $nombresSelect.appendChild(sinactor);
@@ -111,14 +125,12 @@ function createMultimedia(chatFolderName, arrNyE, type,container) {
 
     a.addEventListener('click', function (event) {
         event.preventDefault();
-        if (pywebview && pywebview.api) {
+        if ( api) {
             const pathFile = `/fuentes/${cleanFileName}`;
-            pywebview.api.open_file_window(pathFile);
-        } else {
-            console.warn("pywebview API not available, falling back to window.open");
-            window.open(relativePath, '_blank');
+            callBackPromise('open_file_window',pathFile);
         }
-    });
+        }
+    );
     if (type) {
         const multi = document.createElement(type);
         multi.setAttribute('src', relativePath);
@@ -286,7 +298,8 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
         return divFlex;
 }
 
-function CargarMensajesFront(path, limit){
+
+async function CargarMensajesFront(path, limit){
     let id_div = document.getElementById("idContenido");
     let iniciales1 = "U1";
     let iniciales2 = "U2";
@@ -296,15 +309,15 @@ function CargarMensajesFront(path, limit){
     let method = "appendChild";
      if (limit < 0) {
          index = Math.max(0, indexMensajes + limit);
-         index_max = Math.abs(limit/2);
-         method = "prependChild";
+         index_max = Math.abs(limit);
     }
      else{
          index_max = limit;
          index=indexMensajes;
      }
     const messages_l = [];
-    for (let x=0; index < ArrayJSON.length && x<index_max; index++) {
+     let x=0;
+    for (; index < ArrayJSON.length; index++) {
         const nombre = ArrayJSON[index].Nombre;
         const archivo = ArrayJSON[index].NameFileWhitExtension;
         const mensaje = ArrayJSON[index].Mensaje;
@@ -323,11 +336,23 @@ function CargarMensajesFront(path, limit){
         }
 }
     const fragment = document.createDocumentFragment();
-    messages_l.forEach(element => {
-    fragment.appendChild(element);
-    });
-    id_div[method](fragment);
-    indexMensajes = index;
+/*    if (limit < 0) {
+        messages_l.reverse().forEach(element => {
+            fragment.appendChild(element);
+        });
+        id_div.prepend(fragment);
+    } else {
+        messages_l.forEach(element => {
+            fragment.appendChild(element);
+        });
+        id_div.appendChild(fragment);
+        indexMensajes = index;
+    }*/
+       messages_l.forEach(element => {
+            fragment.appendChild(element);
+        });
+        id_div.appendChild(fragment);
+
 }
 
 
@@ -372,14 +397,14 @@ btnAgregar.addEventListener("click",() =>{
 
 // funcion para selecciona y parsear un txt o archivo comprimido.
 async function open_file() {
-    const result = await pywebview.api.open_file();
+    const result = await callBackPromise('open_file');
     let ArrayParaNombres = result.json;
     nombres = GuardarNombres(ArrayParaNombres);
     ArrayJSON = result.json;
     jsonPath = result.path;
     CargarNombresFront(nombres)
     if(!nombreSeleccionado){
-            nombreSeleccionado = document.getElementById("Nombres_Personas").options[0].value;
+            nombreSeleccionado = nombres[0];
     }
     let id = document.getElementById("idContenido");
      while(id.firstChild) {
@@ -443,16 +468,16 @@ const datosFormulario = {
     };
 
     let divChat = document.getElementById("idContenido").innerHTML;
-    let res = await pywebview.api.gen_repo(perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
+    let res = await callBackPromise('gen_repo',perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
 }
 
 async function exportarChat(){
     let divChat = document.getElementById("idContenido").innerHTML;
-    let res = await pywebview.api.export_chat(window.fechas,divChat)
+    let res = await callBackPromise('export_chat',window.fechas,divChat);
 }
 
 async function agregarArrayDesdeArchivo(scrollId,array,onIndexChange,mode, loc){
- let res = await pywebview.api.add_other(mode, loc);
+ let res = await callBackPromise('add_other',mode, loc);
  if(res.files.length>0){
  array.push(...res.files);
  const nuevoIndex = array.length - 1;
@@ -465,7 +490,7 @@ async function agregarArrayDesdeArchivo(scrollId,array,onIndexChange,mode, loc){
 
 async function eliminarLista(scrollId,array,onIndexChange,indexToRemove, loc){
     const file = array[indexToRemove];
-    const res = await pywebview.api.del_other(file, loc);
+    const res = await callBackPromise('del_other',file, loc);
      if(res.res){
          array.splice(indexToRemove, 1)
     const nuevoIndex = array.length > 0 ? Math.min(indexToRemove, array.length - 1) : null;
@@ -530,33 +555,59 @@ document.getElementById('eliminarCapturaBtn').addEventListener('click', () => {
     }
 });
 
+function cleanN(nodo) {
+    const videos = nodo.querySelectorAll('video');
+    videos.forEach(v => {
+        v.pause();
+        v.src = "";
+        v.load();
+    });
 
+    const audios = nodo.querySelectorAll('audio');
+    audios.forEach(a => {
+        a.pause();
+        a.src = "";
+        a.load();
+    });
 
-
+    const imagenes = nodo.querySelectorAll('img');
+    imagenes.forEach(img => {
+        img.src = "";
+    });
+}
+/*
 const div_cont_chat = document.getElementById("idContenido");
+let isLoading  = false;
 
-div_cont_chat.addEventListener("scroll", () => {
-    const top = div_cont_chat.scrollTop <= 0;
-    const bot = div_cont_chat.scrollTop + div_cont_chat.clientHeight >= div_cont_chat.scrollHeight * 0.80;
+div_cont_chat.addEventListener("scroll", async () => {
+    if (isLoading) return;
+    const top = div_cont_chat.scrollTop <= 50;
+    const bot = div_cont_chat.scrollTop + div_cont_chat.clientHeight >= div_cont_chat.scrollHeight - 50;
 
     if (bot) {
-            for(let x=0;div_cont_chat.firstChild && x<100; x++){
-                div_cont_chat.removeChild(div_cont_chat.firstChild);
+        isLoading = true;
+        const scrollHeightB = div_cont_chat.scrollHeight;
+        const scrollTopB = div_cont_chat.scrollTop;
+        await CargarMensajesFront(jsonPath, 100);
+        div_cont_chat.scrollTop = scrollTopB + (div_cont_chat.scrollHeight - scrollHeightB);
+        for (let x = 0; div_cont_chat.firstChild && x < 100; x++) {
+            const child = div_cont_chat.firstChild;
+            cleanN(child);
+            div_cont_chat.removeChild(child);
         }
-        CargarMensajesFront(jsonPath,100);
+        isLoading = false;
     }
-    if (top){
-        const alt = div_cont_chat.scrollHeight;
-        const scroll = div_cont_chat.scrollTop;
-            for(let x=0;div_cont_chat.lastChild && x<100; x++){
-                div_cont_chat.removeChild(div_cont_chat.lastChild);
+    if (top) {
+        isLoading = true;
+        for (let x = 0; div_cont_chat.firstChild && x < 100; x++) {
+            const child = div_cont_chat.firstChild;
+            cleanN(child);
+            div_cont_chat.removeChild(child);
+            await CargarMensajesFront(jsonPath, -200);
+            isLoading = false;
         }
-        CargarMensajesFront(jsonPath,-100);
-       const dif = div_cont_chat.scrollHeight - alt;
-        div_cont_chat.scrollTop = scroll + dif;
     }
-
-});
+});*/
 
 
 

@@ -1,18 +1,22 @@
+import threading
 from zipfile import ZipFile, ZIP_DEFLATED
 import antlr4
-import webview
 import hashlib
+from flask import Flask, send_from_directory
 from grammar.chatWhatsappLexer import chatWhatsappLexer
 from grammar.chatWhatsappParser import chatWhatsappParser
 from grammar.chatWhatsappParserVisitor import chatWhatsappParserVisitor
 from report import generateReport
 from report import funExportar
-from flask import Flask, send_from_directory
 from datetime import datetime
 import shutil
 import sys
 import os
 from pathlib import Path
+from PyQt6.QtCore import QObject, QUrl, pyqtSlot,QFile, QTextStream
+from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebChannel import QWebChannel
 
 
 
@@ -81,12 +85,7 @@ def extraer_zip(zip_path, project_root=None):
     return {"dir":chat_dir,"file":str(chat_dir / nombre_txt)}
 
 
-def create_zip(directory_path=None, file=None):
-
-    selection = window.create_file_dialog(
-        webview.FileDialog.SAVE, allow_multiple=False,         save_filename="chat_comprimido.zip",
-        file_types=("ZIP files (*.zip)",)
-    )
+def create_zip(selection, directory_path=None, file=None):
 
     zip_path = selection[0] if isinstance(selection, (list, tuple)) else selection
     zip_path = os.path.splitext(zip_path)[0]
@@ -102,39 +101,49 @@ def create_zip(directory_path=None, file=None):
             zipf.write(file, file.name)
 
 
-class Api:
-
-    def __init__(self):
-        self._window = None
+class Api(QObject):
+    def __init__(self, main_window):
+        super().__init__()
+        self._window = main_window
         self.selected_chat = None
         self.dir = None
         self.zip = None
 
+
+    @pyqtSlot(str)
     def open_file_window(self, relative_path):
-        absolute_path = os.path.join(self.dir, relative_path.lstrip("/"))
-        url_path = f"file://{absolute_path}"
-        secondary_window = webview.create_window(
-            title="File Viewer",
-            url=url_path,
-            width=800,
-            height=600
+
+        absolute_path = Path(self.dir) / relative_path.lstrip("/")
+
+        secondary_window = QWebEngineView(self._window)
+
+        secondary_window.setWindowTitle("File Viewer")
+        secondary_window.resize(800, 600)
+
+        secondary_window.load(
+            QUrl.fromLocalFile(str(absolute_path.resolve()))
         )
 
+        secondary_window.show()
+        if not hasattr(self, "_secondary_windows"):
+            self._secondary_windows = []
+        self._secondary_windows.append(secondary_window)
+
+    @pyqtSlot(result='QVariant')
     def open_file(self,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):  #
 
         file_types = (
-            'Compressed Files (*.zip;*.tar;*.gz;*.rar;*.7z)',
-            'TXT (*.txt)',
-            'JSON (*.json)',
-            'All files (*.*)'
+            "Compressed Files (*.zip *.tar *.gz *.rar *.7z);;"
+            "TXT (*.txt);;"
+            "JSON (*.json);;"
+            "All files (*.*)"
         )
+        path_str, _ = QFileDialog.getOpenFileName(
+            self._window, "Open File", "", file_types
+        )
+        if not path_str:
+            return {"res": False}
 
-        result = self._window.create_file_dialog(
-            webview.FileDialog.OPEN,
-            allow_multiple=False,
-            file_types=file_types
-        )
-        path_str = result[0] if isinstance(result, (list, tuple)) else result
         path = Path(path_str)
         compressed_extensions = {'.zip', '.tar', '.gz', '.rar', '.7z', '.bz2', '.xz'}
 
@@ -163,38 +172,35 @@ class Api:
 
 
     #metodo para agregar una imagen a la lista
-    def add_cap(self,target):
-        file_types = ('Image Files (*.bmp;*.jpg;*.gif;*.PNG;*.JPEG)',
-                      'All files (*.*)')
-        result = self._window.create_file_dialog(
-            webview.FileDialog.OPEN,
-            allow_multiple=True,
-            file_types=file_types
+    @pyqtSlot(str)
+    def add_cap(self, target):
+        file_types = "Image Files (*.bmp *.jpg *.gif *.PNG *.JPEG);;All files (*.*)"
+        result, _ = QFileDialog.getOpenFileNames(
+            self._window, "Agregar Imágenes", "", file_types
         )
-        print(result)
 
-    def add_other(self, mode,loc):
-        file_types = []
+    @pyqtSlot(str,str, result='QVariant')
+    def add_other(self, mode, loc):
+        file_types = ""
         if mode == "img":
-            file_types.append('Image files (*.png;*.jpg;*.jpeg;*.webp)')
-        file_types.append('All files (*.*)')
-        file_types = tuple(file_types)
-        result = self._window.create_file_dialog(
-            webview.FileDialog.OPEN,
-            allow_multiple=True,
-            file_types=file_types
-        )
+            file_types = "Image files (*.png *.jpg *.jpeg *.webp);;All files (*.*)"
+        else:
+            file_types = "All files (*.*)"
+        result, _ = QFileDialog.getOpenFileNames(self._window, "Agregar Archivos", "", file_types)
         copied_files = []
-        if result:
-            dest_dir = Path(self.dir / loc )
+        if result and self.dir:
+            dest_dir = Path(self.dir / loc)
             dest_dir.mkdir(parents=True, exist_ok=True)
             for file_path in result:
                 src_path = Path(file_path)
-                shutil.copy(src_path, dest_dir) #Copio los archivos seleccionados en el directorio objetivo
+                shutil.copy(src_path, dest_dir)
                 copied_files.append(src_path.name)
         return {"files": copied_files}
 
-    def del_other(self,file,loc):
+    @pyqtSlot(str, str, result='QVariant')
+    def del_other(self, file, loc):
+        if not self.dir:
+            return {"res": False}
         file_path = Path(self.dir / loc / file)
         try:
             file_path.unlink()
@@ -203,6 +209,7 @@ class Api:
             return {"res": False}
 
     #Metodo para la generacion del reporte
+    @pyqtSlot('QVariantMap', 'QVariantMap', 'QVariantMap', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', str, result='QVariant')
     def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres,dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
         # Parseo nuevamente el file para poder generar el txt filtrado y el json filtrado
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
@@ -254,10 +261,17 @@ class Api:
                        array_nombres, mapa_participantes, self.dir, datos_formulario)
         funExportar(html, self.dir)
         #Creo una ventana para preguntarle al usuario donde guardar el .zip
-        create_zip(self.dir)
+        selection, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save File",
+            "chat_comprimido.zip",
+            "ZIP files (*.zip)"
+        )
+        create_zip(selection,self.dir)
 
         return {"hashes":lista_hashes_multimedias_chat}
 
+    @pyqtSlot('QVariant', str)
     def export_chat(self, dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
 
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
@@ -290,32 +304,61 @@ class Api:
                     except Exception as e:
                         print(f"No se pudo eliminar {file.name}: {e}")
         funExportar(html, self.dir)
-        create_zip(fuentes_dir , self.dir / "chat_exportado" )
+        selection, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save File",
+            "chat_comprimido.zip",
+            "ZIP files (*.zip)"
+        )
+        create_zip(selection,fuentes_dir , self.dir / "chat_exportado" )
+flask_app = Flask(__name__)
 
-app = Flask(__name__)
-@app.route("/")
+@flask_app.route("/")
 def visualizador():
     return send_from_directory(INTERFAZ_DIR, "visualizador.html")
 
-
-@app.route("/visualizador/<path:filename>")
+@flask_app.route("/visualizador/<path:filename>")
 def serve_ui_assets(filename):
     return send_from_directory(INTERFAZ_DIR, filename)
 
-
-@app.route("/<path:filename>")
+@flask_app.route("/<path:filename>")
 def serve_chats(filename):
     return send_from_directory(HERRAMIENTA_DIR, filename)
 
+@flask_app.route("/qtwebchannel/qwebchannel.js")
+def serve_qwebchannel():
+    f = QFile(":/qtwebchannel/qwebchannel.js")
+    if f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
+        stream = QTextStream(f)
+        text = stream.readAll()
+        return text, 200, {'Content-Type': 'application/javascript'}
+    return "/* qwebchannel.js not found */", 404
+
+def run_flask():
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    flask_app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Herramienta")
+        self.setMinimumSize(600, 450)
+        self.resize(1024, 768)
+        self.browser = QWebEngineView()
+        self.setCentralWidget(self.browser)
+        self.channel = QWebChannel()
+        self.api = Api(self)
+        self.channel.registerObject("bridge", self.api)
+        self.browser.page().setWebChannel(self.channel)
+        self.browser.setUrl(QUrl("http://127.0.0.1:5000/"))
+
+
 if __name__ == '__main__':
-    api = Api()
-    window = webview.create_window(
-        'Herramienta',
-        app,
-        js_api=api,
-        min_size=(600, 450)
-    )
-    api._window = window
-    webview.start(
-        debug=True
-    )
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
