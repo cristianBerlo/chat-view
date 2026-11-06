@@ -10,6 +10,7 @@ let selectedCapturaIndex=null;
 let selectedMultimediaIndex = null;
 let selectedParticipanteCapIndex = null;
 let nombreSeleccionado;
+let indexMensajes=0;
 
 document.getElementById("Nombres_Personas").addEventListener("change", (event) => {
     nombreSeleccionado = document.getElementById("Nombres_Personas").options[document.getElementById("Nombres_Personas").selectedIndex].value;
@@ -101,259 +102,160 @@ function toMs(dateStr) {
     return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
 }
 
-function MensajesDinamicos(chatFolderName, id_div, iniciales1, iniciales2, msjDelSistema, nombre, archivo, archivoAux, mensaje, fechaYhora){
-    if(nombre != nombreSeleccionado){ // Actores Secundarios y Sistema de WhatsApp
+function createMultimedia(chatFolderName, arrNyE, type,container) {
+    const cleanFileName = (arrNyE[0] + "." + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
+    const relativePath = `/chats_extracted/${chatFolderName}/${cleanFileName}`;
+    const a = document.createElement('a');
+    a.textContent = cleanFileName;
+    a.classList.add('text-blue-600', 'underline', 'flex', 'items-center', 'gap-2', 'my-1');
 
-        let divFlex2 = document.createElement("div");
+    a.addEventListener('click', function (event) {
+        event.preventDefault();
+        if (pywebview && pywebview.api) {
+            const pathFile = `/fuentes/${cleanFileName}`;
+            pywebview.api.open_file_window(pathFile);
+        } else {
+            console.warn("pywebview API not available, falling back to window.open");
+            window.open(relativePath, '_blank');
+        }
+    });
+    if (type) {
+        const multi = document.createElement(type);
+        multi.setAttribute('src', relativePath);
 
-        if(nombre != msjDelSistema){
-            divFlex2.classList.add('flex','mb-12'); // Mensaje de usuario
+        switch (type) {
+            case "img":
+                multi.setAttribute('loading','lazy');
+                multi.setAttribute('width', '640');
+                multi.setAttribute('height', '480');
+                multi.classList.add('rounded-lg', 'object-cover', 'max-w-full', 'h-auto');
+                break;
+            case "video":
+                multi.setAttribute('loading','lazy');
+                multi.setAttribute('width', '640');
+                multi.setAttribute('height', '480');
+                multi.setAttribute('preload', 'none');
+                multi.controls = true;
+                multi.classList.add('max-w-full', 'rounded-lg');
+                break;
+            case "audio":
+                multi.setAttribute('preload', 'none');
+                multi.controls = true;
+                multi.classList.add('w-full');
+                break;
+        }
+
+        multi.addEventListener('error', function () {
+            container.innerHTML = '';
+            let small = document.createElement("small");
+            let icon = document.createElement("i");
+            icon.classList.add('fa-solid', 'fa-circle-exclamation', 'fa-2x');
+            small.textContent = " No se encontró el archivo multimedia ";
+            container.appendChild(icon);
+            container.appendChild(small);
+        }, false);
+        container.appendChild(a);
+        container.appendChild(multi);
+        return;
+    }
+    const icon = document.createElement("i");
+    icon.classList.add('fa-regular', 'fa-file', 'fa-2x');
+    a.prepend(icon);
+
+}
+
+function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora){
+
+        const principal = (nombre == nombreSeleccionado)
+        const sistema =    (nombre == msjDelSistema)
+        let divFlex = document.createElement("div");
+        let divPull = document.createElement("div");
+        if(!sistema){
+            let alineacion = principal ? 'justify-end' : 'justify-start';
+            divFlex.classList.add('flex', alineacion, 'mb-12', 'w-full');
+            divPull.classList.add('pull_left', 'userpic_wrap', 'w-12', 'mr-4', 'self-end');
+            if(!principal){
+            divFlex.appendChild(divPull);}
+            let marg = principal ? 'ml-4' : 'mr-4';
+            divPull.classList.add('pull_left', 'userpic_wrap', 'w-12', marg, 'self-end');
+            divFlex.appendChild(divPull);
+            let divUserPic = document.createElement("div");
+            let pic = principal ? 'userpic5' : 'userpic8';
+            divUserPic.classList.add('userpic', pic);
+            divUserPic.style.width = '42px';
+            divUserPic.style.height = '42px';
+            let divInitials = document.createElement("div");
+            divInitials.classList.add('initials');
+            divInitials.style.lineHeight = '42px';
+            divInitials.textContent = principal ? `${iniciales1}` : `${iniciales2}`;
+            divUserPic.appendChild(divInitials);
+            divPull.appendChild(divUserPic);
+
         }else{
-            divFlex2.classList.add('flex','justify-center','items-center'); // Mensaje del Sistema 
+            divFlex.classList.add('flex','justify-center','items-center'); // Mensaje del Sistema
+        }
+        let divFlexCol = document.createElement("div");
+        divFlexCol.classList.add('flex', 'flex-col');
+        divFlex.appendChild(divFlexCol);
+        let divBg_white = document.createElement("div");
+
+        if (sistema) {
+              divBg_white.classList.add('bg-slate-200', 'w-full');
+         } else if (principal) {
+            divBg_white.classList.add('p-6','w-96','rounded-3xl','rounded-br-none', 'shadow-sm', 'mb-2');
+            divBg_white.style.background = '#dcf8c6';
+          } else {
+            divBg_white.classList.add('bg-white','p-6','w-96','rounded-3xl','rounded-bl-none', 'shadow-sm', 'mb-2');
         }
 
-        id_div.appendChild(divFlex2);
-
-        let divPull2 = document.createElement("div");
-
-        if(nombre != msjDelSistema){ // Este control hace que si no es un mensaje normal, o sea es algo como el chat esta cifrado de extremo a extremo... que no cree el icono de usuario que esta abajo del mensaje. 
-            divPull2.classList.add('pull_left', 'userpic_wrap', 'w-12', 'mr-4', 'self-end');
-            divFlex2.appendChild(divPull2);
-            console.log("Esta entrando para crear icono"); 
-        }
-        
-        let divUserPic2 = document.createElement("div");
-        divUserPic2.classList.add('userpic', 'userpic8');
-        divUserPic2.style.width = '42px';
-        divUserPic2.style.height = '42px';
-
-        divPull2.appendChild(divUserPic2);
-
-        let divInitials2 = document.createElement("div");
-        divInitials2.classList.add('initials');
-        divInitials2.style.lineHeight = '42px';
-        divInitials2.textContent = `${iniciales2}`;
-
-        divUserPic2.appendChild(divInitials2);
-
-        let divFlexCol2 = document.createElement("div");
-
-        if(nombre != msjDelSistema){
-            divFlexCol2.classList.add('flex','flex-col');
-        }else{
-            divFlexCol2.classList.add('flex','mb-12','justify-center','items-center','flex-col');
-        }
-
-        divFlex2.appendChild(divFlexCol2);
-
-        let divBg_white2 = document.createElement("div");
-
-        if(nombre != msjDelSistema){ // Acá dependiendo del mensaje, tendrá un color el mensaje o otro color. 
-            divBg_white2.classList.add('bg-white','p-6','w-96','rounded-3xl','rounded-bl-none', 'shadow-sm', 'mb-2');
-        }else{
-            divBg_white2.classList.add('bg-slate-200','p-6','w-full','rounded-3xl', 'shadow-sm', 'mb-2'); // Color azul, o sea que no es un mensaje normal, es del sistema
-        }
-
-        divFlexCol2.appendChild(divBg_white2);
-
-        let mb2 = document.createElement("p");
-        mb2.classList.add('mb-1');
-
+        divFlex.appendChild(divFlexCol);
+        divFlexCol.appendChild(divBg_white);
+        let mb = document.createElement("p");
+        mb.classList.add('mb-1');
         const isLargeNumber = (element) => element.nombre === nombre;
-    
-        if(ArrayNameyText.findIndex(isLargeNumber) != -1){ // Acá tambien le doy valor al mensaje del sistema 
-
-            if(ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto === "") // No agrego texto, pero encuentra un nombre 
-                mb2.textContent = `${nombre}`; // Nombre sin agregar info 
-            else
-                mb2.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto; // Nombre agregando info.
+        if(ArrayNameyText.findIndex(isLargeNumber) != -1){ // Acá tambien le doy valor al mensaje del sistema
+                mb.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto;
         }else{
-            mb2.textContent = `${mensaje}`; // Mensaje del Sistema 
+            mb.textContent = `${mensaje}`; // Mensaje del Sistema
         }
-
-        divBg_white2.appendChild(mb2);
+        divBg_white.appendChild(mb);
 
         // Le creo otro small para guardar el mensaje, solo si no es el sistema
-        let textGray2 = document.createElement("small");
+        const textGray = document.createElement("small");
         //textGray2.classList.add('text-gray-500','font-light');
-        textGray2.classList.add('text-gray-500','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
-
-
-        let arrNyE = archivoAux.split('.'); 
-
-        if(nombre != msjDelSistema){ 
-
+        textGray.classList.add('text-gray-500','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
+        if(!sistema){
             if(archivo != ""){ // Si hay archivo
-                
+
+                const arrNyE = archivo.split('.');
                 let punto  = ".";
-                if(punto+arrNyE[1] === ".webp" || punto+arrNyE[1] === ".png" || punto+arrNyE[1] === ".jpg" || punto+arrNyE[1] === ".jpeg" || 
+
+                if(punto+arrNyE[1] === ".webp" || punto+arrNyE[1] === ".png" || punto+arrNyE[1] === ".jpg" || punto+arrNyE[1] === ".jpeg" ||
                 punto+arrNyE[1] === ".gif" || punto+arrNyE[1] === ".tiff"){ // TODO LO QUE TENGA QUE VER CON IMAGENES
+                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"img",divBg_white);
 
-                     let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-
-                    let a = document.createElement('a');
-                    a.setAttribute('href', relativePath);
-                    a.textContent = cleanFileName;
-                 a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-        pywebview.api.open_file_window(pathFile);    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-
-                    let archivoImg = document.createElement("img");
-                    archivoImg.setAttribute('src', relativePath);
-                    archivoImg.setAttribute('width','640');
-                    archivoImg.setAttribute('height','480');
-                    archivoImg.addEventListener('error', Error_Cargar,false);
-                    
-                    // Si anda bien, osea encuentra el archivo, hace esto. 
-                    a.appendChild(archivoImg);
-                    divBg_white2.appendChild(a);
-                    
-                    // Si no hace esto. 
-                    function Error_Cargar() {
-                        window.event.srcElement.style.display = "None";
-                        let small = document.createElement("small");
-                        let icon = document.createElement("i");
-                        icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                        small.textContent = " No se encontró la Imagen  ".concat('\n');
-                        divBg_white2.appendChild(small);
-                        divBg_white2.appendChild(icon);
-                    }
-                    
-                    
-                    // <i class="fa-solid fa-circle-exclamation"></i>
-
-                }else if(punto+arrNyE[1] === ".mp4" || punto+arrNyE[1] === ".mkv" || punto+arrNyE[1] === ".avi" || punto+arrNyE[1] === ".mov" || 
+                }else if(punto+arrNyE[1] === ".mp4" || punto+arrNyE[1] === ".mkv" || punto+arrNyE[1] === ".avi" || punto+arrNyE[1] === ".mov" ||
                 punto+arrNyE[1] === ".flv" || punto+arrNyE[1] === ".divx"){ // TODO LO QUE TENGA QUE VER CON VIDEOS.
-                    // <video src="video.mp4" width="640" height="480"></video>
-                    let archivoVideo = document.createElement("video");
-                    let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
 
-                    archivoVideo.setAttribute('src', relativePath);
-                    archivoVideo.setAttribute('width','640');
-                    archivoVideo.setAttribute('height','480');
-                    archivoVideo.muted = true;
-                    archivoVideo.autoplay = false;
-                    archivoVideo.loop = true;
-                    archivoVideo.controls = true;
+                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"video",divBg_white);
 
-                    archivoVideo.addEventListener('error', Error_Cargar,false);
-
-                    divBg_white2.appendChild(archivoVideo);
-
-                    function Error_Cargar() {
-                        
-                        let small = document.createElement("small");
-                        let icon = document.createElement("i");
-                        icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                        small.textContent = " No se encontró el Video  ".concat('\n');
-                        divBg_white2.appendChild(small);
-                        divBg_white2.appendChild(icon);
-                    }
-
-
-                }else if(punto+arrNyE[1] === ".mp3" || punto+arrNyE[1] === ".m4a" || punto+arrNyE[1] === ".aac" || punto+arrNyE[1] === ".wav" || punto+arrNyE[1] === ".aiff" || 
+                }else if(punto+arrNyE[1] === ".mp3" || punto+arrNyE[1] === ".m4a" || punto+arrNyE[1] === ".aac" || punto+arrNyE[1] === ".wav" || punto+arrNyE[1] === ".aiff" ||
                 punto+arrNyE[1] === ".wma" || punto+arrNyE[1] === ".opus" || punto+arrNyE[1] === ".ogg"){ // TODO LO QUE TENGA QUE VER CON MUSICA.
-                    let archivoMusica = document.createElement("audio");
-                    let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-                    archivoMusica.setAttribute('src', relativePath);
-                    // <audio src="audio.mp3" preload="none" controls></audio>
-                    archivoMusica.setAttribute('preload','none');
-                    archivoMusica.controls = true;
-                    archivoMusica.addEventListener('error', Error_Cargar,false);
+                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"audio",divBg_white);
 
-                    divBg_white2.appendChild(archivoMusica);
-
-                    function Error_Cargar() {
-                        let small = document.createElement("small");
-                        let icon = document.createElement("i");
-                        icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                        small.textContent = " No se encontró el archivo de Audio  ".concat('\n');
-                        divBg_white2.appendChild(small);
-                        divBg_white2.appendChild(icon);
-                    }
-
-
-                    
-                }else if(punto+arrNyE[1] === ".pdf" || punto+arrNyE[1] === ".doc" || punto+arrNyE[1] === ".docx" || punto+arrNyE[1] === ".txt" || 
+                }else if(punto+arrNyE[1] === ".pdf" || punto+arrNyE[1] === ".doc" || punto+arrNyE[1] === ".docx" || punto+arrNyE[1] === ".txt" ||
                 punto+arrNyE[1] === ".odt" || punto+arrNyE[1] === ".xlsx" || punto+arrNyE[1] === ".pptx"){
                     // FALTA CONTROLAR SI NO FALTA EL DOCUMENTO.
+                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
 
-                    let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-                     let a = document.createElement('a');
-                    a.setAttribute('href', relativePath);
-                  a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-
-        pywebview.api.open_file_window(pathFile);
-    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-                     let icon = document.createElement("i");
-                     icon.classList.add('fa-regular','fa-file','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                     a.appendChild(icon);
-                     divBg_white2.appendChild(a);
-
-
-                }else if(punto+arrNyE[1] === ".py" || punto+arrNyE[1] === ".rar" || punto+arrNyE[1] === ".zip" ||  punto+arrNyE[1] === ".html" || 
-                punto+arrNyE[1] === ".tmp" || punto+arrNyE[1] === ".dat" || punto+arrNyE[1] === ".exe" || punto+arrNyE[1] === ".deb" || 
+                }else if(punto+arrNyE[1] === ".py" || punto+arrNyE[1] === ".rar" || punto+arrNyE[1] === ".zip" ||  punto+arrNyE[1] === ".html" ||
+                punto+arrNyE[1] === ".tmp" || punto+arrNyE[1] === ".dat" || punto+arrNyE[1] === ".exe" || punto+arrNyE[1] === ".deb" ||
                 punto+arrNyE[1] === ".vcf" || punto+arrNyE[1] === ".dmg" || punto+arrNyE[1] === ".psd" || punto+arrNyE[1] === ".sql"){
-                    // <i class="fa-duotone fa-file-zipper"></i> <i class="fa-solid fa-file-lines"></i>
 
-                    // FALTA CONTROLAR SI FALTAN ARCHIVOS.
-                    let a = document.createElement("a");
-                    let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-                    a.setAttribute('href', relativePath);
-                    a.textContent = cleanFileName;
-                 a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-        pywebview.api.open_file_window(pathFile);
-    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-                    let icon = document.createElement("i");
-
-                    icon.classList.add('fa-solid','fa-file-lines','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-
-                    if(punto+arrNyE[1] === ".vcf"){
-                        icon.classList.add('fa-solid','fa-user','fa-2x');
-                        mensaje = archivo; // Si es un contacto, indico el nombre. 
-                    }else{
-                        icon.classList.add('fa-solid','fa-file-lines','fa-2x'); 
-                    }
-                    
-                    a.appendChild(icon);
-                    divBg_white2.appendChild(a);
-                    divBg_white2.appendChild(textGray2);
-                    
+                     createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
                 }
-                
-            }
 
+            }}
             let a = document.createElement("a");
             let icon = document.createElement("i");
             let erLlamada = /^null$/;
@@ -362,325 +264,70 @@ function MensajesDinamicos(chatFolderName, id_div, iniciales1, iniciales2, msjDe
             if(erLlamada.test(mensaje)){
                 icon.classList.add('fa-solid','fa-phone','arrow-up-right','fa-2x');
                 a.appendChild(icon);
-                divBg_white2.appendChild(a);
-                textGray2.textContent = 'Llamada'
+                divBg_white.appendChild(a);
+                textGray.textContent = 'Llamada'
             }else if(erLlamadaperdida.test(mensaje)){
                 icon.classList.add('fa-solid','fa-phone-slash','arrow-up-right','fa-2x');
                 a.appendChild(icon);
-                divBg_white2.appendChild(a);
-                textGray2.textContent = 'Llamada perdida'
+                divBg_white.appendChild(a);
+                textGray.textContent = 'Llamada perdida'
             }else{
-                textGray2.textContent = `${mensaje}`;
+                textGray.textContent = `${mensaje}`;
             }
-            divBg_white2.appendChild(textGray2);
-
-            /* textGray2.textContent = `${mensaje}`; // Esta asignación es para cualquier caso. 
-            divBg_white2.appendChild(textGray2); */
+            divBg_white.appendChild(textGray);
+        // La hora la comparten tanto el que tiene el sistema como el que no tiene el sistema.
+        let textGrayHora = document.createElement("small");
+        textGrayHora.classList.add('text-gray-500','font-light');
+        textGrayHora.textContent = `${fechaYhora}`;
+        divFlexCol.appendChild(textGrayHora);
+        if(principal){
+            divFlex.appendChild(divPull);
         }
-
-        // La hora la comparten tanto el que tiene el sistema como el que no tiene el sistema. 
-        let textGrayHora2 = document.createElement("small");
-        textGrayHora2.classList.add('text-gray-500','font-light');
-        textGrayHora2.textContent = `${fechaYhora}`;
-
-        divFlexCol2.appendChild(textGrayHora2);
-
-    }else{
-
-        let divFlex1 = document.createElement("div");
-        divFlex1.classList.add('flex','mb-12','flex-row-reverse'); // Mensaje de usuario
-        
-        id_div.appendChild(divFlex1);
-
-        let divPull1 = document.createElement("div");
-        divPull1.classList.add('pull_left', 'userpic_wrap', 'w-12', 'ml-4', 'self-end');
-        
-        divFlex1.appendChild(divPull1);
-          
-        let divUserPic1 = document.createElement("div");
-        divUserPic1.classList.add('userpic', 'userpic5');
-        divUserPic1.style.width = '42px';
-        divUserPic1.style.height = '42px';
-
-        divPull1.appendChild(divUserPic1);
-
-        let divInitials1 = document.createElement("div");
-        divInitials1.classList.add('initials');
-        divInitials1.style.lineHeight = '42px';
-        divInitials1.textContent = `${iniciales1}`;
-
-        divUserPic1.appendChild(divInitials1);
-
-        let divFlexCol1 = document.createElement("div");
-        divFlexCol1.classList.add('flex','flex-col');
-        
-        divFlex1.appendChild(divFlexCol1);
-
-        let divBg_white1 = document.createElement("div");
-        divBg_white1.classList.add('p-6','w-96','rounded-3xl','rounded-br-none', 'shadow-sm', 'mb-2');
-        divBg_white1.style.background = '#dcf8c6';
-
-        divFlexCol1.appendChild(divBg_white1);
-
-        let mb1 = document.createElement("p");
-        mb1.classList.add('mb-1','text-black');
-
-        const isLargeNumber = (element) => element.nombre === nombre;
-    
-        if(ArrayNameyText.findIndex(isLargeNumber) != -1){ 
-
-            if(ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto === "") // No agrego texto, pero encuentra un nombre 
-                mb1.textContent = `${nombre}`; // Nombre sin agregar info 
-            else
-                mb1.textContent =  ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto; // Nombre agregando info.
-        }
-
-        divBg_white1.appendChild(mb1);
-
-        // Le creo otro small para guardar el mensaje, solo si no es el sistema
-        let textGray1 = document.createElement("small");
-        //textGray1.classList.add('text-black','font-light');
-        textGray1.classList.add('text-black','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
-        
-        let arrNyE = archivoAux.split('.'); 
-
-        if(archivo != ""){ // Si hay archivo 
-            
-            let punto  = ".";
-            
-            if(punto+arrNyE[1] === ".webp" || punto+arrNyE[1] === ".png" || punto+arrNyE[1] === ".jpg" || punto+arrNyE[1] === ".jpeg" || 
-            punto+arrNyE[1] === ".gif" || punto+arrNyE[1] === ".tiff"){ // TODO LO QUE TENGA QUE VER CON IMAGENES 
-                    
-                // <a title="Los Tejos" href="http://www.lostejos.com"><img src="casarural.jpg" alt="Los Tejos" /></a>
-
-                   let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-
-                    let a = document.createElement('a');
-                    a.setAttribute('href', relativePath);
-
-                    a.textContent = cleanFileName;
-
-                    // Intercept click to open in a pywebview floating window instead of navigating normally
-                 a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-        pywebview.api.open_file_window(pathFile);    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-                let archivoImg = document.createElement("img");
-                
-                //console.log("Lo que concateno tiene:"+arrNyE[0]+punto+arrNyE[1]);
-                archivoImg.setAttribute('src',relativePath); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                archivoImg.setAttribute('width','640');
-                archivoImg.setAttribute('height','480');
-                archivoImg.addEventListener('error', Error_Cargar,false);
-                
-                // Si anda bien, osea encuentra el archivo, hace esto. 
-                a.appendChild(archivoImg);
-                divBg_white1.appendChild(a);
-                
-                // Si no hace esto. 
-                function Error_Cargar() {
-                    window.event.srcElement.style.display = "None";
-                    let small = document.createElement("small");
-                    let icon = document.createElement("i");
-                    icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                    small.textContent = " No se encontró la Imagen  ".concat('\n');
-                    divBg_white1.appendChild(small);
-                    divBg_white1.appendChild(icon);
-                }
-                
-                
-                // <i class="fa-solid fa-circle-exclamation"></i>
-
-            }else if(punto+arrNyE[1] === ".mp4" || punto+arrNyE[1] === ".mkv" || punto+arrNyE[1] === ".avi" || punto+arrNyE[1] === ".mov" || 
-            punto+arrNyE[1] === ".flv" || punto+arrNyE[1] === ".divx"){ // TODO LO QUE TENGA QUE VER CON VIDEOS.
-                // <video src="video.mp4" width="640" height="480"></video>
-                let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-
-                let archivoVideo = document.createElement("video");
-                archivoVideo.setAttribute('src',relativePath);
-                archivoVideo.setAttribute('width','640');
-                archivoVideo.setAttribute('height','480');
-                archivoVideo.muted = true;
-                archivoVideo.autoplay = false;
-                archivoVideo.loop = true;
-                archivoVideo.controls = true;
-
-                archivoVideo.addEventListener('error', Error_Cargar,false);
-
-                divBg_white1.appendChild(archivoVideo);
-
-                function Error_Cargar() {
-                    
-                    let small = document.createElement("small");
-                    let icon = document.createElement("i");
-                    icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                    small.textContent = " No se encontró el Video  ".concat('\n');
-                    divBg_white1.appendChild(small);
-                    divBg_white1.appendChild(icon);
-                }
-
-
-            }else if(punto+arrNyE[1] === ".mp3" || punto+arrNyE[1] === ".m4a" || punto+arrNyE[1] === ".aac" || punto+arrNyE[1] === ".wav" || punto+arrNyE[1] === ".aiff" || 
-            punto+arrNyE[1] === ".wma" || punto+arrNyE[1] === ".opus" || punto+arrNyE[1] === ".ogg"){ // TODO LO QUE TENGA QUE VER CON MUSICA.
-                let archivoMusica = document.createElement("audio");
-                // <audio src="audio.mp3" preload="none" controls></audio>
-                let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-
-                archivoMusica.setAttribute('src', relativePath);
-                archivoMusica.setAttribute('preload','none'); 
-                archivoMusica.controls = true;
-                archivoMusica.addEventListener('error', Error_Cargar,false);
-
-                divBg_white1.appendChild(archivoMusica);
-
-                function Error_Cargar() {
-                    let small = document.createElement("small");
-                    let icon = document.createElement("i");
-                    icon.classList.add('fa-solid','fa-circle-exclamation','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                    small.textContent = " No se encontró el archivo de Audio  ".concat('\n');
-                    divBg_white1.appendChild(small);
-                    divBg_white1.appendChild(icon);
-                }
-
-
-                
-            }else if(punto+arrNyE[1] === ".pdf" || punto+arrNyE[1] === ".doc" || punto+arrNyE[1] === ".docx" || punto+arrNyE[1] === ".txt" || 
-            punto+arrNyE[1] === ".odt" || punto+arrNyE[1] === ".xlsx" || punto+arrNyE[1] === ".pptx"){
-                // FALTA CONTROLAR SI NO FALTA EL DOCUMENTO. 
-
-                       let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-
-                    let a = document.createElement('a');
-                    a.setAttribute('href', relativePath);
-
-                    a.textContent = cleanFileName;
-
-                 a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-        pywebview.api.open_file_window(pathFile);    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-                    let icon = document.createElement("i");
-                    icon.classList.add('fa-regular','fa-file','fa-2x'); // Tengo que agregarle el replace para eliminar los caracteres invsibles
-                    a.appendChild(icon);
-                    divBg_white1.appendChild(a);
-
-
-            }else if(punto+arrNyE[1] === ".py" || punto+arrNyE[1] === ".rar" || punto+arrNyE[1] === ".zip" ||  punto+arrNyE[1] === ".html" || 
-            punto+arrNyE[1] === ".tmp" || punto+arrNyE[1] === ".dat" || punto+arrNyE[1] === ".exe" || punto+arrNyE[1] === ".deb" || 
-            punto+arrNyE[1] === ".vcf" || punto+arrNyE[1] === ".dmg" || punto+arrNyE[1] === ".psd" || punto+arrNyE[1] === ".sql"){
-                // <i class="fa-duotone fa-file-zipper"></i> <i class="fa-solid fa-file-lines"></i>
-
-                // FALTA CONTROLAR SI FALTAN ARCHIVOS. 
-
-                   let cleanFileName = (arrNyE[0] + punto + arrNyE[1]).replace(/[\u{0080}-\u{FFFF}]/gu, "").trim();
-                    let relativePath = `/chats_extracted/${chatFolderName}/fuentes/${cleanFileName}`;
-                    let a = document.createElement('a');
-                    a.setAttribute('href', relativePath);
-                    a.textContent = cleanFileName;
-
-                    // Intercept click to open in a pywebview floating window instead of navigating normally
-                 a.addEventListener('click', function(event) {
-    event.preventDefault();
-    console.log("Opening file via pywebview:", relativePath);
-
-    if (pywebview && pywebview.api) {
-        const pathFile =`/fuentes/${cleanFileName}`;
-        pywebview.api.open_file_window(pathFile);    } else {
-        console.warn("pywebview API not available, falling back to window.open");
-        window.open(relativePath, '_blank');
-    }
-});
-                let icon = document.createElement("i");
-
-                if(punto+arrNyE[1] === ".vcf"){ // Si es el contacto de una persona, le hago un icono distinto porque es importante. 
-                    icon.classList.add('fa-solid','fa-user','fa-2x');
-                    mensaje = archivo; 
-                }else{
-                    icon.classList.add('fa-solid','fa-file-lines','fa-2x'); 
-                }
-                a.appendChild(icon);
-                divBg_white1.appendChild(a);
-                divBg_white1.appendChild(textGray1);
-                
-            }
-            
-        }
-
-        let a = document.createElement("a");
-        let icon = document.createElement("i");
-        let erLlamada = /^null$/;
-        let erLlamadaperdida = /^Llamada perdida$/;
-
-        if(erLlamada.test(mensaje)){
-            icon.classList.add('fa-solid','fa-phone','arrow-up-right','fa-2x');
-            a.appendChild(icon);
-            divBg_white1.appendChild(a);
-            textGray1.textContent = 'Llamada'
-        }else if(erLlamadaperdida.test(mensaje)){
-            icon.classList.add('fa-solid','fa-phone-slash','arrow-up-right','fa-2x');
-            a.appendChild(icon);
-            divBg_white1.appendChild(a);
-            textGray1.textContent = 'Llamada perdida'
-        }else{
-            textGray1.textContent = `${mensaje}`;
-        }
-        divBg_white1.appendChild(textGray1);
-
-        /* textGray1.textContent = `${mensaje}`;
-        divBg_white1.appendChild(textGray1); */
-
-        // La hora la comparten tanto el que tiene el sistema como el que no tiene el sistema. 
-        let textGrayHora1 = document.createElement("small");
-        textGrayHora1.classList.add('text-gray-500','font-light','self-end');
-        textGrayHora1.textContent = `${fechaYhora}`;
-        
-        divFlexCol1.appendChild(textGrayHora1);
-        
-    }
+        return divFlex;
 }
 
-function CargarMensajesFront(path){
+function CargarMensajesFront(path, limit){
     let id_div = document.getElementById("idContenido");
     let iniciales1 = "U1";
     let iniciales2 = "U2";
     let msjDelSistema = "SistemaDeWhatsApp";
-    for (let index = 0; index < ArrayJSON.length; index++) {
-
-        let nombre = ArrayJSON[index].Nombre;
-        let archivo = ArrayJSON[index].NameFileWhitExtension;
-        let archivoAux = ArrayJSON[index].NameFileWhitExtension;
-        let mensaje = ArrayJSON[index].Mensaje;
-        let fechaYhora = ArrayJSON[index].Fecha +" "+ArrayJSON[index].Hora;
+    let index;
+    let index_max;
+    let method = "appendChild";
+     if (limit < 0) {
+         index = Math.max(0, indexMensajes + limit);
+         index_max = Math.abs(limit/2);
+         method = "prependChild";
+    }
+     else{
+         index_max = limit;
+         index=indexMensajes;
+     }
+    const messages_l = [];
+    for (let x=0; index < ArrayJSON.length && x<index_max; index++) {
+        const nombre = ArrayJSON[index].Nombre;
+        const archivo = ArrayJSON[index].NameFileWhitExtension;
+        const mensaje = ArrayJSON[index].Mensaje;
+        const fechaYhora = ArrayJSON[index].Fecha +" "+ArrayJSON[index].Hora;
         if(window.fechas.length>0){
             const isWithinAnyInterval = window.fechas.some(interval =>
         toMs( ArrayJSON[index].Fecha) >= toMs(interval.start) && toMs( ArrayJSON[index].Fecha) <= toMs(interval.end)
         );
         if (isWithinAnyInterval) {
-            MensajesDinamicos(path, id_div, iniciales1, iniciales2, msjDelSistema, nombre, archivo, archivoAux, mensaje, fechaYhora);
+            messages_l.push(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora));
+            x++;
         }
         }else{
-            MensajesDinamicos(path,id_div,iniciales1,iniciales2,msjDelSistema,nombre,archivo,archivoAux,mensaje,fechaYhora);
-
+            messages_l.push(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora,));
+            x++;
         }
 }
+    const fragment = document.createDocumentFragment();
+    messages_l.forEach(element => {
+    fragment.appendChild(element);
+    });
+    id_div[method](fragment);
+    indexMensajes = index;
 }
 
 
@@ -738,16 +385,18 @@ async function open_file() {
      while(id.firstChild) {
         id.removeChild(id.firstChild);
     }
-        CargarMensajesFront(jsonPath);
+        indexMensajes=0;
+        CargarMensajesFront(jsonPath,400);
 }
 
 
-function recargarMensajes(){
+function recargarMensajes(lim){
+    indexMensajes = 0;
     let id = document.getElementById("idContenido");
      while(id.firstChild) {
         id.removeChild(id.firstChild);
     }
-        CargarMensajesFront(jsonPath);
+        CargarMensajesFront(jsonPath,lim);
 }
 
 document.getElementById('tab-informe').addEventListener('click', () => {
@@ -792,15 +441,12 @@ const datosFormulario = {
         modelo: document.getElementById('inputModeloDispositivo').value,
         imei: document.getElementById('inputImeiDispositivo').value
     };
-    recargarMensajes(); //Llamo a la funcion de recargar mensajes por si el usuario ingreso nuevas fechas o cambio nombres antes de realizar la exportacion
-    // podria tener una variable que guarde el ultimo cambio o algo del estilo y pregunte si hay uno nuevo para no recargar cuando no es necesario
-    // Posible optimizacion
+
     let divChat = document.getElementById("idContenido").innerHTML;
     let res = await pywebview.api.gen_repo(perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
 }
 
 async function exportarChat(){
-    recargarMensajes();
     let divChat = document.getElementById("idContenido").innerHTML;
     let res = await pywebview.api.export_chat(window.fechas,divChat)
 }
@@ -883,3 +529,34 @@ document.getElementById('eliminarCapturaBtn').addEventListener('click', () => {
     },selectedParticipanteCapIndex,"capturas_"+nombre);
     }
 });
+
+
+
+
+const div_cont_chat = document.getElementById("idContenido");
+
+div_cont_chat.addEventListener("scroll", () => {
+    const top = div_cont_chat.scrollTop <= 0;
+    const bot = div_cont_chat.scrollTop + div_cont_chat.clientHeight >= div_cont_chat.scrollHeight * 0.80;
+
+    if (bot) {
+            for(let x=0;div_cont_chat.firstChild && x<100; x++){
+                div_cont_chat.removeChild(div_cont_chat.firstChild);
+        }
+        CargarMensajesFront(jsonPath,100);
+    }
+    if (top){
+        const alt = div_cont_chat.scrollHeight;
+        const scroll = div_cont_chat.scrollTop;
+            for(let x=0;div_cont_chat.lastChild && x<100; x++){
+                div_cont_chat.removeChild(div_cont_chat.lastChild);
+        }
+        CargarMensajesFront(jsonPath,-100);
+       const dif = div_cont_chat.scrollHeight - alt;
+        div_cont_chat.scrollTop = scroll + dif;
+    }
+
+});
+
+
+

@@ -141,10 +141,10 @@ class Api:
         if path.suffix.lower() in compressed_extensions:
             try:
                 with open(path_str, 'rb') as f:
-                    res = extraer_zip(Path(path_str))
+                    res = extraer_zip(path)
                     self.selected_chat = res.get("file")
                     self.dir = res.get("dir")
-                    self.zip  = hashFiles([Path(path_str).name], self.dir, "Archivo comprido del chat")
+                    self.zip  = hashFiles([path.name],path.parent, "Archivo comprido del chat")
                     #guardo el hash del zip abierto
                     # Si me encuentro con un zip lo extraigo y retorno los datos del .txt
             except FileNotFoundError:
