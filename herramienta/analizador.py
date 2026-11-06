@@ -87,7 +87,7 @@ def create_zip(directory_path=None, file=None):
         webview.FileDialog.SAVE, allow_multiple=False,         save_filename="chat_comprimido.zip",
         file_types=("ZIP files (*.zip)",)
     )
-    print(directory_path)
+
     zip_path = selection[0] if isinstance(selection, (list, tuple)) else selection
     zip_path = os.path.splitext(zip_path)[0]
 
