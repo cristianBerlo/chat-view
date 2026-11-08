@@ -5,13 +5,15 @@ let jsonPath;
 let multimediasAgregados = new Array();
 let capturasParticipantes = new Map();
 let capturasChat= new Array();
+let capturasDipositivo = new Array();
 // indice de las listas de archivos extras agregados
 let selectedCapturaIndex=null;
 let selectedMultimediaIndex = null;
 let selectedParticipanteCapIndex = null;
+let selectedDispositivoIndex = null;
 let nombreSeleccionado;
 let indexMensajes=0;
-
+let selectedIndex = null;
 function callBackPromise(method, ...args) {
 
     return new Promise((resolve, reject) => {
@@ -20,7 +22,6 @@ function callBackPromise(method, ...args) {
             reject(new Error("API no disponible"));
             return;
         }
-
         api[method](...args, resolve);
 
     });
@@ -65,16 +66,15 @@ function GuardarNombres(Array_JSON){
 }
 
 function CargarNombresFront(nombres){
-
+    arrayNameyText=[];
     for (let index = 0; index < nombres.length; index++) {
-                    
+
         let objNameYText = {
             nombre:"",
             texto:""
         }
         objNameYText.nombre = nombres[index];
         objNameYText.texto = nombres[index];
-        // Falta el texto 
         ArrayNameyText.push(objNameYText);
         
     }
@@ -98,6 +98,16 @@ function CargarNombresFront(nombres){
     const sinactor = document.createElement('option');
     sinactor.textContent = "Sin actor Principal";
     $nombresSelect.appendChild(sinactor);
+    //limpio la lista de nombres antes de introducir nuevos
+    while(listaNombresPart.hasChildNodes()){
+        listaNombresPart.removeChild(listaNombresPart.firstChild);
+    }
+    ArrayNameyText.forEach(participante => {
+                const li = document.createElement("li");
+                li.className = 'list-group-item text-sm py-2 border-bottom';
+                li.textContent = participante.texto;
+                listaNombresPart.appendChild(li);
+            });
     
 }
 
@@ -202,7 +212,6 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
             divInitials.textContent = principal ? `${iniciales1}` : `${iniciales2}`;
             divUserPic.appendChild(divInitials);
             divPull.appendChild(divUserPic);
-
         }else{
             divFlex.classList.add('flex','justify-center','items-center'); // Mensaje del Sistema
         }
@@ -212,7 +221,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
         let divBg_white = document.createElement("div");
 
         if (sistema) {
-              divBg_white.classList.add('bg-slate-200', 'w-full');
+            divBg_white.classList.add('bg-slate-200', 'w-full', 'rounded-lg', 'p-2');
          } else if (principal) {
             divBg_white.classList.add('p-6','w-96','rounded-3xl','rounded-br-none', 'shadow-sm', 'mb-2');
             divBg_white.style.background = '#dcf8c6';
@@ -234,7 +243,9 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
 
         // Le creo otro small para guardar el mensaje, solo si no es el sistema
         const textGray = document.createElement("small");
-        //textGray2.classList.add('text-gray-500','font-light');
+        //textGray2.classList.add('text-gray-500','fo
+    //
+    // nt-light');
         textGray.classList.add('text-gray-500','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
         if(!sistema){
             if(archivo != ""){ // Si hay archivo
@@ -257,13 +268,11 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
 
                 }else if(punto+arrNyE[1] === ".pdf" || punto+arrNyE[1] === ".doc" || punto+arrNyE[1] === ".docx" || punto+arrNyE[1] === ".txt" ||
                 punto+arrNyE[1] === ".odt" || punto+arrNyE[1] === ".xlsx" || punto+arrNyE[1] === ".pptx"){
-                    // FALTA CONTROLAR SI NO FALTA EL DOCUMENTO.
                     createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
 
                 }else if(punto+arrNyE[1] === ".py" || punto+arrNyE[1] === ".rar" || punto+arrNyE[1] === ".zip" ||  punto+arrNyE[1] === ".html" ||
                 punto+arrNyE[1] === ".tmp" || punto+arrNyE[1] === ".dat" || punto+arrNyE[1] === ".exe" || punto+arrNyE[1] === ".deb" ||
                 punto+arrNyE[1] === ".vcf" || punto+arrNyE[1] === ".dmg" || punto+arrNyE[1] === ".psd" || punto+arrNyE[1] === ".sql"){
-
                      createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
                 }
 
@@ -272,7 +281,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
             let icon = document.createElement("i");
             let erLlamada = /^null$/;
             let erLlamadaperdida = /^Llamada perdida$/;
-
+            //Faltaria para ver videollamadas
             if(erLlamada.test(mensaje)){
                 icon.classList.add('fa-solid','fa-phone','arrow-up-right','fa-2x');
                 a.appendChild(icon);
@@ -298,75 +307,94 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
         return divFlex;
 }
 
+function createMsgDate(date,msg){
+            let divFlex = document.createElement("div");
+            divFlex.classList.add('flex','justify-center','items-center');
+            let divBg_white = document.createElement("div");
+            divBg_white.classList.add('bg-slate-200', 'w-full', 'rounded-lg', 'p-2');
+            let divFlexCol = document.createElement("div");
+            divFlexCol.classList.add('flex', 'flex-col');
+            divFlex.appendChild(divFlexCol);
+            divFlexCol.appendChild(divBg_white);
+            let mb = document.createElement("p");
+            mb.classList.add('mb-1');
+            mb.textContent = `${msg} ${date} `;
+            divBg_white.appendChild(mb);
+            return divFlex;
+}
 
 async function CargarMensajesFront(path, limit){
+    newInfo = false;
     let id_div = document.getElementById("idContenido");
     let iniciales1 = "U1";
     let iniciales2 = "U2";
     let msjDelSistema = "SistemaDeWhatsApp";
-    let index;
-    let index_max;
-    let method = "appendChild";
-     if (limit < 0) {
-         index = Math.max(0, indexMensajes + limit);
-         index_max = Math.abs(limit);
-    }
-     else{
-         index_max = limit;
-         index=indexMensajes;
-     }
-    const messages_l = [];
-     let x=0;
-    for (; index < ArrayJSON.length; index++) {
-        const nombre = ArrayJSON[index].Nombre;
-        const archivo = ArrayJSON[index].NameFileWhitExtension;
-        const mensaje = ArrayJSON[index].Mensaje;
-        const fechaYhora = ArrayJSON[index].Fecha +" "+ArrayJSON[index].Hora;
-        if(window.fechas.length>0){
-            const isWithinAnyInterval = window.fechas.some(interval =>
-        toMs( ArrayJSON[index].Fecha) >= toMs(interval.start) && toMs( ArrayJSON[index].Fecha) <= toMs(interval.end)
-        );
-        if (isWithinAnyInterval) {
-            messages_l.push(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora));
-            x++;
-        }
-        }else{
-            messages_l.push(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora,));
-            x++;
-        }
-}
+    let prev_date=toMs("01/01/1900"); // fecha de prueba para que el primer mensaje siempre tenga etiqueta
     const fragment = document.createDocumentFragment();
-/*    if (limit < 0) {
-        messages_l.reverse().forEach(element => {
-            fragment.appendChild(element);
-        });
-        id_div.prepend(fragment);
-    } else {
-        messages_l.forEach(element => {
-            fragment.appendChild(element);
-        });
-        id_div.appendChild(fragment);
-        indexMensajes = index;
-    }*/
-       messages_l.forEach(element => {
-            fragment.appendChild(element);
-        });
-        id_div.appendChild(fragment);
 
+    if(window.fechas.length>0){
+        console.log("entre aca");
+            let flag_date= Array.from({ length: fechas.length }, () => false);
+            for (let index=0; index < ArrayJSON.length; index++) {
+
+                const nombre = ArrayJSON[index].Nombre;
+                const archivo = ArrayJSON[index].NameFileWhitExtension;
+                const mensaje = ArrayJSON[index].Mensaje;
+                const hora = ArrayJSON[index].Hora;
+                const fecha = ArrayJSON[index].Fecha;
+                let next = false;
+                let index_date=0;
+
+                while (!next && index_date<window.fechas.length) {
+
+                    if (toMs(ArrayJSON[index].Fecha) >= toMs(window.fechas[index_date].start) && toMs(ArrayJSON[index].Fecha) <= toMs(window.fechas[index_date].end)) {
+                        if (toMs(ArrayJSON[index].Fecha) > prev_date) {
+                            if (!flag_date[index_date]) {
+                                //pusheo el mensaje que diga que empezo el intervalo
+                                fragment.appendChild(createMsgDate(window.fechas[index_date].display, "Inicio del periodo:"));
+                                flag_date[index_date] = true;
+                            }
+                            fragment.appendChild(createMsgDate(fecha,""));
+                        }
+
+                        fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha + " " + hora));
+                        prev_date=toMs(ArrayJSON[index].Fecha) ;
+                        next=true; //No avanzo hasta que no encuentro un periodo valido para el mensaje
+                        //Como los mensajes estan ordenados si no hay un periodo para este mensaje no va a existir un periodo para los demas
+                        }
+                        else {
+                            index_date++;
+                        }
+                }
+            }
+        } else{
+            for (let index=0; index < ArrayJSON.length; index++) {
+                const nombre = ArrayJSON[index].Nombre;
+                const archivo = ArrayJSON[index].NameFileWhitExtension;
+                const mensaje = ArrayJSON[index].Mensaje;
+                const hora= ArrayJSON[index].Hora;
+                const fecha= ArrayJSON[index].Fecha;
+                if(toMs(ArrayJSON[index].Fecha) > prev_date){
+                             //pushe0 el nuevo dia
+                        fragment.appendChild(createMsgDate(fecha,""));
+                    }
+                prev_date=toMs(ArrayJSON[index].Fecha) ;
+                fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha+" "+hora));
+        }}
+        id_div.appendChild(fragment);
 }
 
 
 
 // Evento Agregar Información 
 let btnAgregar = document.getElementById("BtnAgregar");
-let textArea = document.getElementById("contenidoTextArea");
-textArea.value = "";
-btnAgregar.addEventListener("click",() =>{
+let listaNombresPart = document.getElementById("listaParticipantes");
 
+btnAgregar.addEventListener("click",() =>{
+    newInfo=true;
     let InputText = document.getElementById("InputTexto");
     const $nombresSelect = document.querySelector("#Nombres_Personas");
     const indice = $nombresSelect.selectedIndex;
-
     if(indice === ArrayNameyText.length){ // Es decir que seleccionaron el actor Principal. 
         Swal.fire({
             icon: 'error',
@@ -378,8 +406,14 @@ btnAgregar.addEventListener("click",() =>{
 
         if(InputText.value != ""){
             ArrayNameyText[indice].texto = ArrayNameyText[indice].nombre+ " - " + InputText.value;
-            textArea.value = textArea.value + ArrayNameyText[indice].nombre + " - " +ArrayNameyText[indice].texto + "\n";
-            console.log(ArrayNameyText);
+             while(listaNombresPart.hasChildNodes()){
+                listaNombresPart.removeChild(listaNombresPart.firstChild);
+            }
+            ArrayNameyText.forEach(participante => {
+                const li = document.createElement("li");
+                li.textContent = participante.texto;
+                listaNombresPart.appendChild(li);
+            });
         }else{
             Swal.fire({
                 icon: 'error',
@@ -390,9 +424,6 @@ btnAgregar.addEventListener("click",() =>{
 
     }
     InputText.value = "";
-
-    console.log(ArrayNameyText);
-        
 });
 
 // funcion para selecciona y parsear un txt o archivo comprimido.
@@ -402,10 +433,9 @@ async function open_file() {
     nombres = GuardarNombres(ArrayParaNombres);
     ArrayJSON = result.json;
     jsonPath = result.path;
-    CargarNombresFront(nombres)
-    if(!nombreSeleccionado){
-            nombreSeleccionado = nombres[0];
-    }
+    //renuevo los datos del contenedor
+    CargarNombresFront(nombres);
+    nombreSeleccionado = nombres[0];
     let id = document.getElementById("idContenido");
      while(id.firstChild) {
         id.removeChild(id.firstChild);
@@ -466,12 +496,17 @@ const datosFormulario = {
         modelo: document.getElementById('inputModeloDispositivo').value,
         imei: document.getElementById('inputImeiDispositivo').value
     };
-
+    //vuelvo a cargar los mensajes
+    if(newInfo){
+    CargarMensajesFront(jsonPath,400);}
     let divChat = document.getElementById("idContenido").innerHTML;
     let res = await callBackPromise('gen_repo',perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
 }
 
 async function exportarChat(){
+    //vuelvo a cargar los mensajes
+    if(newInfo){
+    CargarMensajesFront(jsonPath,400);}
     let divChat = document.getElementById("idContenido").innerHTML;
     let res = await callBackPromise('export_chat',window.fechas,divChat);
 }
@@ -527,6 +562,17 @@ document.getElementById('agregarCapturaChatBtn').addEventListener('click',() => 
         selectedCapturaIndex = nuevoIndex;
     },"img", "capturas_chat");
 });
+document.getElementById('agregarCapturaDispositivoBtnBtn').addEventListener('click',() => {
+    agregarArrayDesdeArchivo('scrollCapturasDispositivo', capturasDipositivo, (nuevoIndex) => {
+        selectedDispositivoIndex = nuevoIndex;
+    },"img", "capturas_Dispositivo");
+});
+
+document.getElementById('eliminarCapturaDispotivoBtn').addEventListener('click', () => {
+    eliminarLista('scrollCapturasDispositivo', capturasDipositivo, (nuevoIndex) => {
+        selectedDispositivoIndex = nuevoIndex;
+    },selectedDispositivoIndex,"capturas_Dispositivo");
+});
 
 document.getElementById('eliminarMultimediaBtn').addEventListener('click', () => {
     eliminarLista('scrollMultimedia', multimediasAgregados, (nuevoIndex) => {
@@ -575,6 +621,7 @@ function cleanN(nodo) {
         img.src = "";
     });
 }
+
 /*
 const div_cont_chat = document.getElementById("idContenido");
 let isLoading  = false;

@@ -17,7 +17,7 @@ from PyQt6.QtCore import QObject, QUrl, pyqtSlot,QFile, QTextStream
 from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
-
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 
 def resource_path(relative_path):
@@ -246,9 +246,9 @@ class Api(QObject):
             for json_msg in json:
                 if json_msg.get("NameFileWhitExtension"):
                     kfile.append(json_msg.get("NameFileWhitExtension"))
-
+        lista_hashes_multimedias_chat = []
         #Calculo los hashes de todos los archivos alcanzados y los agregados
-        lista_hashes_multimedias_chat = self.zip or [] # or en caso de que la entrada haya sido un .txt en lugar de un comprimido
+        lista_hashes_multimedias_chat += self.zip # or en caso de que la entrada haya sido un .txt en lugar de un comprimido
         lista_hashes_multimedias_chat += hashFiles([Path(self.selected_chat).name],self.dir,"Txt del chat")
         lista_hashes_multimedias_chat += hashFiles(kfile, self.dir / "fuentes","Multimedia chat")
         lista_hashes_multimedias_chat += hashFiles(lista_multimedia, self.dir / "adicionales","Multimedias agregados")
@@ -352,8 +352,15 @@ class MainWindow(QMainWindow):
         self.api = Api(self)
         self.channel.registerObject("bridge", self.api)
         self.browser.page().setWebChannel(self.channel)
+        self.inspector_window = QMainWindow(self)
+        self.inspector_window.setWindowTitle("Consola / Inspector Web")
+        self.inspector_window.resize(800, 600)
+        self.inspector_view = QWebEngineView()
+        self.inspector_window.setCentralWidget(self.inspector_view)
+        self.browser.page().setDevToolsPage(self.inspector_view.page())
+        self.shortcut = QShortcut(QKeySequence("F12"), self)
+        self.shortcut.activated.connect(self.inspector_window.show)
         self.browser.setUrl(QUrl("http://127.0.0.1:5000/"))
-
 
 if __name__ == '__main__':
     flask_thread = threading.Thread(target=run_flask, daemon=True)
