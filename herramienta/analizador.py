@@ -31,6 +31,7 @@ def resource_path(relative_path):
 INTERFAZ_DIR = resource_path("interfaz/Visualizador")
 HERRAMIENTA_DIR = resource_path("herramienta")
 
+
 def hashFiles(files,base, org,algorithm='sha256'):
     hashes = []
     if files is None:
@@ -47,6 +48,7 @@ def hashFiles(files,base, org,algorithm='sha256'):
         except PermissionError:
             print(f"Error: You do not have permission to access.")
     return  hashes
+
 
 def date_comp(date, dates, format='%d/%m/%y'):
     if isinstance(date, str):
@@ -344,6 +346,7 @@ def run_flask():
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("Herramienta")
         self.setMinimumSize(600, 450)
         self.resize(1024, 768)
@@ -353,6 +356,8 @@ class MainWindow(QMainWindow):
         self.api = Api(self)
         self.channel.registerObject("bridge", self.api)
         self.browser.page().setWebChannel(self.channel)
+
+        #declaro analizador web
         self.inspector_window = QMainWindow(self)
         self.inspector_window.setWindowTitle("Consola / Inspector Web")
         self.inspector_window.resize(800, 600)
@@ -361,6 +366,7 @@ class MainWindow(QMainWindow):
         self.browser.page().setDevToolsPage(self.inspector_view.page())
         self.shortcut = QShortcut(QKeySequence("F12"), self)
         self.shortcut.activated.connect(self.inspector_window.show)
+
         self.browser.setUrl(QUrl("http://127.0.0.1:5000/"))
 
 if __name__ == '__main__':
