@@ -209,8 +209,8 @@ class Api(QObject):
             return {"res": False}
 
     #Metodo para la generacion del reporte
-    @pyqtSlot('QVariantMap', 'QVariantMap', 'QVariantMap', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', str, result='QVariant')
-    def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres,dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
+    @pyqtSlot('QVariantMap', 'QVariantMap', 'QVariantMap', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', str,str,'QVariant', result='QVariant')
+    def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres,dates,html,desc,array_dis,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
         # Parseo nuevamente el file para poder generar el txt filtrado y el json filtrado
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
         lexer = lexer_class(file)
@@ -253,12 +253,13 @@ class Api(QObject):
         lista_hashes_multimedias_chat += hashFiles(kfile, self.dir / "fuentes","Multimedia chat")
         lista_hashes_multimedias_chat += hashFiles(lista_multimedia, self.dir / "adicionales","Multimedias agregados")
         lista_hashes_multimedias_chat += hashFiles(lista_chat, self.dir / "capturas_chat","Capturas chat")
+        lista_hashes_multimedias_chat += hashFiles(array_dis, self.dir / "capturas_dispositivo","Capturas dispositivo")
         for nombre in array_nombres:
             lista_hashes_multimedias_chat += hashFiles(mapa_participantes.get(nombre), self.dir / f"capturas_{nombre}", "Capturas " + nombre)
 
         #genero los html del reporte
         generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat, lista_multimedia, lista_chat,
-                       array_nombres, mapa_participantes, self.dir, datos_formulario)
+                       array_nombres, mapa_participantes, self.dir, datos_formulario,desc,array_dis,dates)
         funExportar(html, self.dir)
         #Creo una ventana para preguntarle al usuario donde guardar el .zip
         selection, _ = QFileDialog.getSaveFileName(

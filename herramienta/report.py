@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat, lista_multimedia, lista_chat,
-                   array_nombres, mapa_participantes,ruta, datos_formulario):
+                   array_nombres, mapa_participantes,ruta, datos_formulario,descripcion, lista_capturas_dispositivo,lista_fechas):
     # funcion para generar el reporte html, la mayoria del codigo es la plantinlla. Hay varias funciones locales que sirven para la inyeccion de datos de las listas
     estilos_css = """
     <style>
@@ -218,6 +218,37 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
         </details>
         """.strip()
 
+
+    def renderizar_fechas_html():
+        if not lista_fechas:
+            return '<p class="empty">No hay fechas registradas.</p>'
+
+        filas_tr = "".join(
+            f"""<tr>
+            <td>{item.get('start', '')}</td>
+            <td><code>{item.get('end', '')}</code></td>
+            </tr>"""
+            for item in lista_fechas
+        )
+
+        return f"""
+        <details class="sub-card" open>
+        <summary><strong>Periodos filtrados:</strong> ({len(lista_fechas)} elementos)</summary>
+        <div class="table-responsive">
+        <table class="table table-striped">
+        <thead>
+        <tr>
+        <th>Inicio del periodo</th>
+        <th>Fin del periodo</th>
+        </tr>
+        </thead>
+        <tbody>
+            {filas_tr}
+        </tbody>
+        </table>
+        </div>
+        </details>
+        """.strip()
     def renderizar_participantes_html():
         if not array_nombres:
             return '<p class="empty">No hay nombres ni capturas de participantes registradas.</p>'
@@ -287,6 +318,32 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
         </details>
         """
         return html.strip()
+    def renderizar_dispositivorenderizar_chat_html_html():
+        if not lista_capturas_dispositivo:
+            return '<p class="empty">No hay capturas de chat registradas.</p>'
+
+        imagenes_dispositivo = []
+        for img_name in lista_capturas_dispositivo:
+            ruta_completa = f"capturas_dispositivo/{img_name}"
+            img_card = f"""
+            <div class="image-card">
+            <a href="{ruta_completa}" target="_blank" title="Abrir imagen en nueva ventana">
+            <img src="{ruta_completa}" alt="{img_name}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'error-img\\'>No se pudo cargar: {img_name}</span>';">
+            </a>
+            <span class="img-caption">{img_name}</span>
+            </div>
+            """
+            imagenes_dispositivo.append(img_card)
+
+        html = f"""
+        <details class="sub-card" open>
+        <summary><strong>Capturas de dispositivo</strong> ({len(lista_capturas_dispositivo)} elementos)</summary>
+        <div class="image-grid">
+            {"".join(imagenes_dispositivo)}
+        </div>
+        </details>
+        """
+        return html.strip()
 
     # --- Ensamblaje principal del reporte ---
     html_reporte = f"""
@@ -311,25 +368,29 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
                 <h4>Detalles de la Causa y Peritaje</h4>
                 <p><strong>N° de Causa:</strong> {datos_formulario.get('pex', 'N/D')}</p>
                 <p><strong>Fecha del Aporte:</strong> {datos_formulario.get('fecha_reporte', 'N/D')}</p>
+                <p><strong>Requiriente del Aporte:</strong> {datos_formulario.get('requiriente', 'N/D')}</p>
+
             </div>
 
             <!-- Perito -->
             <div class="card mb-3 p-3">
-                <h4>Perito Interviniente</h4>
+                <h4>Analista</h4>
                 <p><strong>Nombre y Apellido:</strong> {perito.get('nombre', '')} {perito.get('apellido', '')}</p>
                 <p><strong>Dependencia:</strong> {perito.get('dependencia', '')}</p>
             </div>
 
             <!-- Aportante -->
             <div class="card mb-3 p-3">
-                <h4>Datos del Aportante</h4>
+                <h4>Aportante</h4>
                 <p><strong>Nombre y Apellido:</strong> {aportante.get('nombre', '')} {aportante.get('apellido', '')}</p>
                 <p><strong>DNI:</strong> {aportante.get('dni', '')}</p>
+                <p><strong>Telefono:</strong> {aportante.get('telefono', '')}</p>
+
             </div>
 
             <!-- Dispositivo -->
             <div class="card mb-3 p-3">
-                <h4>Dispositivo Analizado</h4>
+                <h4>Dispositivo</h4>
                 <p><strong>Marca / Modelo:</strong> {dispositivo.get('marca', '')} {dispositivo.get('modelo', '')}</p>
                 <p><strong>IMEI:</strong> {dispositivo.get('imei', '')}</p>
             </div>
@@ -337,20 +398,26 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
             <hr>
 
             <!-- Secciones Renderizadas -->
-            <section class="mb-4">
-                {renderizar_hashes_html()}
+              <section class="mb-4">
+                {renderizar_fechas_html()}
             </section>
-
-            <section class="mb-4">
-                {renderizar_multimedia_html()}
-            </section>
-
             <section class="mb-4">
                 {renderizar_participantes_html()}
             </section>
 
             <section class="mb-4">
                 {renderizar_chat_html()}
+            </section>
+             <section class="mb-4">
+                {renderizar_dispositivorenderizar_chat_html_html()}
+            </section>
+            <section class="mb-4">
+                {renderizar_hashes_html()}
+            </section>
+            
+            <section class="mb-4">
+                {renderizar_multimedia_html()}
+                {descripcion}
             </section>
         </div>
     </body>

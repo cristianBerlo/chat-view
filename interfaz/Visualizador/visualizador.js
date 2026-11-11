@@ -245,7 +245,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
         //textGray2.classList.add('text-gray-500','fo
     //
     // nt-light');
-        textGray.classList.add('text-gray-500','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
+        textGray.classList.add('text-black','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
         if(!sistema){
             if(archivo != ""){ // Si hay archivo
 
@@ -297,7 +297,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
             divBg_white.appendChild(textGray);
         // La hora la comparten tanto el que tiene el sistema como el que no tiene el sistema.
         let textGrayHora = document.createElement("small");
-        textGrayHora.classList.add('text-gray-500','font-light');
+        textGrayHora.classList.add('text-black','font-light');
         textGrayHora.textContent = `${fechaYhora}`;
         divFlexCol.appendChild(textGrayHora);
         if(principal){
@@ -478,7 +478,8 @@ async function generarReporte(event){
     event.preventDefault();
 const datosFormulario = {
         pex: document.getElementById('inputPEX').value,
-        fecha_reporte: document.getElementById('inputFechaReporte').value
+        fecha_reporte: document.getElementById('inputFechaReporte').value,
+        requiriente: document.getElementById("inputRequiriente").value
     };
 
     const perito = {
@@ -490,7 +491,8 @@ const datosFormulario = {
     const aportante = {
         nombre: document.getElementById('inputNombreAportante').value,
         apellido: document.getElementById('inputApellidoAportante').value,
-        dni: document.getElementById('inputDNIAportante').value
+        dni: document.getElementById('inputDNIAportante').value,
+        telefono: document.getElementById("inputTelefonoAportante").value
     };
 
     const dispositivo = {
@@ -498,17 +500,28 @@ const datosFormulario = {
         modelo: document.getElementById('inputModeloDispositivo').value,
         imei: document.getElementById('inputImeiDispositivo').value
     };
+    const descriptcion = document.getElementById("inputDescripcionMultimedia").value;
     //vuelvo a cargar los mensajes
     if(newInfo){
-    CargarMensajesFront(jsonPath,400);}
+     let id = document.getElementById("idContenido");
+     while(id.firstChild) {
+        id.removeChild(id.firstChild);
+    }
+     await CargarMensajesFront(jsonPath,400);
+    }
     let divChat = document.getElementById("idContenido").innerHTML;
-    let res = await callBackPromise('gen_repo',perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat);
+
+    let res = await callBackPromise('gen_repo',perito,aportante,dispositivo,datosFormulario,Object.fromEntries(capturasParticipantes),multimediasAgregados,capturasChat,nombres,window.fechas,divChat,descriptcion,capturasDipositivo);
 }
 
 async function exportarChat(){
     //vuelvo a cargar los mensajes
     if(newInfo){
-    CargarMensajesFront(jsonPath,400);}
+         let id = document.getElementById("idContenido");
+     while(id.firstChild) {
+        id.removeChild(id.firstChild);
+    }
+    await CargarMensajesFront(jsonPath,400);}
     let divChat = document.getElementById("idContenido").innerHTML;
     let res = await callBackPromise('export_chat',window.fechas,divChat);
 }
@@ -564,16 +577,16 @@ document.getElementById('agregarCapturaChatBtn').addEventListener('click',() => 
         selectedCapturaIndex = nuevoIndex;
     },"img", "capturas_chat");
 });
-document.getElementById('agregarCapturaDispositivoBtnBtn').addEventListener('click',() => {
+document.getElementById('agregarCapturaDispositivoBtn').addEventListener('click',() => {
     agregarArrayDesdeArchivo('scrollCapturasDispositivo', capturasDipositivo, (nuevoIndex) => {
         selectedDispositivoIndex = nuevoIndex;
-    },"img", "capturas_Dispositivo");
+    },"img", "capturas_dispositivo");
 });
 
-document.getElementById('eliminarCapturaDispotivoBtn').addEventListener('click', () => {
+document.getElementById('eliminarCapturaDispositivoBtn').addEventListener('click', () => {
     eliminarLista('scrollCapturasDispositivo', capturasDipositivo, (nuevoIndex) => {
         selectedDispositivoIndex = nuevoIndex;
-    },selectedDispositivoIndex,"capturas_Dispositivo");
+    },selectedDispositivoIndex,"capturas_dispositivo");
 });
 
 document.getElementById('eliminarMultimediaBtn').addEventListener('click', () => {
