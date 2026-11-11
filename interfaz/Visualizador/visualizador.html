@@ -27,7 +27,7 @@
 <body>
   <section class="h-screen flex overflow-hidden">
 
-    <div class="bg-white w-3/12 p-6 flex flex-col h-full">
+    <div class=" w-[28%] p-6 flex flex-col h-full bg-slate-900 text-light">
         <!-- Navegación de Pestañas -->
         <ul class="nav nav-tabs mb-3" id="leftTabs" role="tablist">
             <li class="nav-item" role="presentation">
@@ -38,6 +38,9 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link text-xs font-weight-bold" id="tab-informe" data-bs-toggle="tab" data-bs-target="#content-informe" type="button" role="tab" aria-controls="content-informe" aria-selected="false">Informe</button>
+            </li>
+             <li class="nav-item" role="presentation">
+                <button class="nav-link text-xs font-weight-bold" id="tab-multimedia" data-bs-toggle="tab" data-bs-target="#content-multimedia" type="button" role="tab" aria-controls="content-multimedia" aria-selected="false">Multimedia</button>
             </li>
         </ul>
 
@@ -51,39 +54,60 @@
                 <button id="Archivo" onclick="open_file()" class="btn btn-success btn-sm text-sm w-100 mb-3">Seleccione el archivo</button>
 
                 <label class="form-label text-sm font-weight-bold">Aplicación</label>
-                <select id="app" name="app" class="form-select form-select-lg mb-3" style="font-size: 1.1rem; padding: 10px;">
+                <select id="app" name="app" class="form-select form-select-lg mb-3 bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500" style="font-size: 1.1rem; padding: 10px;">
                     <option value="whatsapp">whatsapp</option>
                 </select>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                    <label class="m-1 h5 text-sm"> Filtrar por Fecha</label>
+                <input type="text" name="Fecha" id="Fecha" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 margenDeAbajo form-control" value="">
 
-                <textarea id="contenido" cols="30" rows="4" class="styleTextArea margenDeArriba margenDeAbajo form-control rounded-0 text-sm w-100" readonly="readonly"></textarea>
-
-                <label class="m-1 h5 text-sm"> Filtrar por Fecha</label>
-                <input type="text" name="Fecha" id="Fecha" class="margenDeAbajo form-control" value="">
-
-                <div id="scrollFechas" class="border border-2 border-primary p-2 overflow-auto">
+                <div id="scrollFechas" class="border rounded-3 p-3 overflow-auto ">
                     <div class="item" style="color: #888; font-size: 0.85rem;">No hay fechas seleccionadas</div>
                 </div>
 
-                <button id="deleteBtn" type="button" class="m-1 btn btn-outline-danger btn-sm text-sm margenDeAbajo">Eliminar</button>
+                <button id="deleteBtn" type="button" class="m-1 btn btn-danger btn-sm text-sm margenDeAbajo">Eliminar</button>
                 <br><br>
+                        </div>
 
                 <div class="centrar">
-                    <button type="button" onclick="recargarMensajes(300)" class="btn btn-outline-primary text-sm" id="mostrar">Recargar chat</button>
+                    <button type="button" onclick="recargarMensajes(300)" class="btn btn-primary text-sm" id="mostrar">Recargar chat</button>
                     <br><br>
                     <div class="centrar">
-                        <button type="button" onclick="exportarChat()" class="btn btn-outline-primary text-sm" id="idExportar">Exportar Chat</button>
+                        <button type="button" onclick="exportarChat()" class="btn btn-primary text-sm" id="idExportar">Exportar Chat</button>
                     </div>
                 </div>
+            </div>
+                        <!-- PESTAÑA 4: multimedia -->
+
+                     <div class="tab-pane fade p-4" style="overflow-y: scroll; overflow-x: hidden; max-height: 85vh;" id="content-multimedia" role="tabpanel" aria-labelledby="tab-multimedia">
+                            <h3 class="centrar text-xl mb-2 m-1"> Multimedias </h3>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                                 <div id="scrollMultimedia" class="bg-slate-900/60 text-slate-100  border rounded-3 p-3 overflow-auto" style="max-height: 50vh;">
+
+                            <div class="item fst-italic text-center py-3 text-slate-400" style="font-size: 0.9rem;">
+                                No hay elementos disponibles
+                            </div>
+
+                        </div>
+                        <textarea type="text" id="inputDescripcionMultimedia" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm mt-2" placeholder="Descripcion"></textarea>
+                        <br>
+                        <div class="d-flex gap-2 mt-2">
+                            <button id="agregarMultimediaBtn" type="button" class="btn btn-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarMultimediaBtn" type="button" class="btn btn-danger btn-sm text-sm">Eliminar</button>
+                        </div>
+                    </div>
             </div>
 
             <!-- PESTAÑA 2: Participantes -->
             <div class="tab-pane fade" id="content-participantes" style = "overflow-y: scroll; overflow-x: hidden;" role="tabpanel" aria-labelledby="tab-participantes">
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+
                 <h3 class="centrar text-xl mb-2 m-1"> Participantes </h3>
                 <br>
                 <label class="m-1 h5 text-sm"> Seleccione el actor titular de la cuenta</label>
                 <br>
 
-                <select id="Nombres_Personas" class="margenDeAbajo m-1 form-select form-select-sm" aria-label=".form-select-sm example">
+                <select id="Nombres_Personas" class="margenDeAbajo m-1 form-select form-select-sm bg-slate-900/60 text-slate-100 placeholder:text-slate-500" aria-label=".form-select-sm example">
                     <!-- Aca insertaria las personas en forma dinamica -->
                 </select>
 
@@ -91,163 +115,227 @@
                 <br>
                 <div class="input-group mb-3">
                     <span class="input-group-text text-sm" id="basic-addon1">Text</span>
-                    <input id="InputTexto" type="text" class="m-1 form-control text-sm" placeholder="Escriba aquí" aria-label="Username" aria-describedby="basic-addon1">
+                    <input id="InputTexto" type="text" class=" bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Escriba aquí" aria-label="Username" aria-describedby="basic-addon1">
+
                 </div>
-                <ul class="list-group border border-2 border-primary rounded-3 mb-2 shadow-sm" id="listaParticipantes">
-                    <button id="BtnAgregar" type="button" class="m-1 btn btn-outline-primary btn-sm text-sm">Agregar</button>
+                <ul class="list-group border border-2 rounded-3 mb-2 shadow-sm" id="listaParticipantes">            </ul>
+
+                    <button id="BtnAgregar" type="button" class="m-1 btn btn-primary btn-sm text-sm">Agregar</button>
                 <br>
 
 
                 <hr class="my-3">
-
-
+            </div>
             </div>
 
-            <!-- PESTAÑA 3: Informe -->
-            <div class="tab-pane fade" style = "overflow-y: scroll; overflow-x: hidden;" id="content-informe" role="tabpanel" aria-labelledby="tab-informe">
-                <h3 class="centrar text-xl mb-2 m-1"> Informe </h3>
-                <br>
-                <form id="formReporte">
-                    <h4 id="etq" class="mb-3 text-center font-weight-bold">Generación de Reporte</h4>
 
-                    <div class="mb-3">
-                        <div class="row">
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label for="inputPEX" class="form-label font-weight-bold">Numero de causa:</label>
-                                <input type="text" id="inputPEX" class="form-control form-control-sm" placeholder="Numero de causa" required>
-                            </div>
-                            <div class="col-md-6 mb-2 mb-md-0">
-                                <label for="inputFechaReporte" class="form-label font-weight-bold">Fecha del aporte:</label>
-                                <input type="date" id="inputFechaReporte" class="form-control form-control-sm" required>
-                            </div>
-                        </div>
+            <!-- PESTAÑA 3: Informe -->
+                <div class="tab-pane fade p-4" style="overflow-y: scroll; overflow-x: hidden; max-height: 85vh;" id="content-informe" role="tabpanel" aria-labelledby="tab-informe">                <h3 class="centrar text-xl mb-2 m-1"> Informe </h3>
+
+                <form id="formReporte">
+
+                <!--  Datos Generales -->
+
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                    <h3 class="m-0 font-weight-bold text-dark">
+                        <i class="bi bi-file-earmark-text-fill me-2"></i> Datos Generales
+                    </h3>
+                </div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                 <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="inputPEX" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold small">Número de Causa:</label>
+                        <input type="text" id="inputPEX" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Ej: 12345/2026">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inputFechaReporte" class="form-label font-weight-bold small">Fecha del Aporte:</label>
+                        <input type="date" id="inputFechaReporte" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm">
+                    </div>
+                    <div class="col-md-12">
+                        <label for="inputRequiriente" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold small">Requiriente:</label>
+                        <input type="text" id="inputRequiriente" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Fiscalía / Dependencia">
+                    </div>
+                </div>
+            </div>
                     </div>
 
-                    <div class="mb-3">
+                                    <!--  Datos del analistas -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                    <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Datos del analista</span>
+                    </h3>
+                </div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
                         <div class="row">
-                            <label class="form-label font-weight-bold">Perito:</label>
                             <div class="row">
                         <div class="col-md-6 mb-2">
-                            <label for="inputNombrePerito" class="form-label font-weight-bold">Nombre:</label>
-                            <input type="text" id="inputNombrePerito" class="form-control form-control-sm" placeholder="Nombre del perito">
+                            <label for="inputNombrePerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Nombre:</label>
+                            <input type="text" id="inputNombrePerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Nombre del perito">
                         </div>
 
                         <div class="col-md-6 mb-2">
-                            <label for="inputApellidoPerito" class="form-label font-weight-bold">Apellido:</label>
-                            <input type="text" id="inputApellidoPerito" class="form-control form-control-sm" placeholder="Apellido del perito">
+                            <label for="inputApellidoPerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Apellido:</label>
+                            <input type="text" id="inputApellidoPerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Apellido del perito">
                         </div>
                     </div>
 
                     <div class="row mt-2">
                         <div class="col-md-12">
-                            <label for="inputDependenciaPerito" class="form-label font-weight-bold">Dependencia:</label>
-                            <input type="text" id="inputDependenciaPerito" class="form-control form-control-sm" placeholder="Dependencia del perito">
+                            <label for="inputDependenciaPerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Dependencia:</label>
+                            <input type="text" id="inputDependenciaPerito" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Dependencia del perito">
                         </div>
                     </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="row">
-                            <label class="form-label font-weight-bold">Aportante:</label>
+                                                                    <!--  Datos del aportante -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                    <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Datos del aportante</span>
+                    </h3>
+                </div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                    <div class="row">
                             <div class="row">
 
                             <div class="col-md-6 mb-2 mb-md-0">
                                 <label for="inputNombreAportante" class="form-label font-weight-bold">Nombre:</label>
-                                <input type="text" id="inputNombreAportante" class="form-control form-control-sm" placeholder="Nombre del aportante">
+                                <input type="text" id="inputNombreAportante" class="bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Nombre del aportante">
                             </div>
 
 
                                   <div class="col-md-6 mb-2 mb-md-0">
                                 <label for="inputApellidoAportante" class="form-label font-weight-bold">Apellido:</label>
-                                <input type="text" id="inputApellidoAportante" class="form-control form-control-sm" placeholder="Apellido del aportante">
+                                <input type="text" id="inputApellidoAportante" class=" bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Apellido del aportante">
                             </div>
                             </div>
                             <div class="row">
                                       <div class="col-md-6 mb-2 mb-md-0">
 
                                 <label for="inputDNIAportante" class="form-label font-weight-bold">DNI:</label>
-                                <input type="text" id="inputDNIAportante" class="form-control form-control-sm" placeholder="DNI del aportante">
+                                <input type="text" id="inputDNIAportante" class=" bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="DNI del aportante">
+                                    </div>
+                                        <div class="col-md-6 mb-2 mb-md-0">
+
+                                <label for="inputTelefonoAportante" class="form-label font-weight-bold">Telefono:</label>
+                                <input type="text" id="inputTelefonoAportante" class=" bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Telefono del aportante">
                                     </div>
 
                                 </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
+
+                                                                    <!--  Datos del dispositivo -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                             <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Datos del dispositivo</span>
+                    </h3>
+                </div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
                         <div class="row">
-                            <label class="form-label font-weight-bold">Dispositivo:</label>
                                <div class="row">
                                 <div class="col-md-6 mb-2 mb-md-0">
-                                <label for="inputMarcaDispositivo" class="form-label font-weight-bold">Marca:</label>
-                                <input type="text" id="inputMarcaDispositivo" class="form-control form-control-sm" placeholder="Marca del dispositivo">
+                                 <label for="inputMarcaDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Marca:</label>
+                                <input type="text" id="inputMarcaDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Motorola/Samsung/Etc">
                                 </div>
                                  <div class="col-md-6 mb-2 mb-md-0">
-                                <label for="inputImeiDispositivo" class="form-label font-weight-bold">Imei:</label>
-                                <input type="text" id="inputImeiDispositivo" class="form-control form-control-sm" placeholder="Imei">
+                                <label for="inputImeiDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Imei:</label>
+                                <input type="text" id="inputImeiDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="Imei">
                             </div>
                            </div>
                            <div class="row">
                             <div class="col-md-6">
-                                <label for="inputModeloDispositivo" class="form-label font-weight-bold">Modelo:</label>
-                                <input type="text" id="inputModeloDispositivo" class="form-control form-control-sm" placeholder="Modelo del dispositivo">
+                                <label for="inputModeloDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-label font-weight-bold">Modelo:</label>
+                                <input type="text" id="inputModeloDispositivo" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 form-control form-control-sm" placeholder="S25/14/Etc">
                             </div>
                             </div>
                         </div>
                     </div>
-                              <hr class="my-3">
+                     <!--  capturas  -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                      <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Capturas del dispositivo</span>
+                    </h3>
+                </div>
 
-                        <div class="mb-4">
-                        <label class="form-label font-weight-bold">Capturas Dispositivo</label>
-                        <div id="scrollCapturasDispositivo" class="border border-2 border-primary p-2 overflow-auto">
-                            <div class="item text-muted" style="font-size: 0.85rem;">No hay capturas</div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                                 <div id="scrollCapturasDispositivo" class="bg-slate-900 text-slate-100 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 border rounded-3 p-3 overflow-auto" style="max-height: 50vh;">
+
+                        <div class="item fst-italic text-center py-3 text-slate-400" style="font-size: 0.9rem;">
+                            No hay capturas disponibles
+                            </div>
+
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <button id="agregarCapturaDispositivoBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
-                            <button id="eliminarCapturaDispositivoBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
+                            <button id="agregarCapturaDispositivoBtn" type="button" class="btn btn-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarCapturaDispositivoBtn" type="button" class="btn btn-danger btn-sm text-sm">Eliminar</button>
                         </div>
                     </div>
-                      <hr class="my-3">
-                    <div class="mb-4">
+                                         <!--  Datos del dispositivo -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                             <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Capturas de los participantes</span>
+                    </h3>
+                </div>
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
 
                     <label class="form-label font-weight-bold">Participantes:</label>
-                    <div id="scrollParticipantes" class="border border-2 border-primary p-2 overflow-auto">
-                        <div class="item text-muted" style="font-size: 0.85rem;">No hay participantes</div>
-                    </div>
-                </div>
+
+
+                                 <div id="scrollParticipantes" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 border rounded-3 p-3 overflow-auto" style="max-height: 50vh;">
+
+                            <div class="item fst-italic text-center py-3 text-slate-400" style="font-size: 0.9rem;">
+                                No hay participantes disponibles
+                            </div>
+
+                        </div>
+
+                     <br>
                         <div class="mb-4">
                         <label class="form-label font-weight-bold">Capturas participantes</label>
-                        <div id="scrollCapturasParticipantes" class="border border-2 border-primary p-2 overflow-auto">
-                            <div class="item text-muted" style="font-size: 0.85rem;">No hay capturas</div>
+
+                                 <div id="scrollCapturasParticipantes" class="bg-slate-900 placeholder:text-slate-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 border rounded-3 p-3 overflow-auto" style="max-height: 50vh;">
+
+                            <div class="item fst-italic text-center py-3 text-slate-400" style="font-size: 0.9rem;">
+                                No hay capturas disponibles
+                            </div>
+
                         </div>
+
                         <div class="d-flex gap-2 mt-2">
-                            <button id="agregarCapturaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
-                            <button id="eliminarCapturaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
+                            <button id="agregarCapturaBtn" type="button" class="btn btn-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarCapturaBtn" type="button" class="btn btn-danger btn-sm text-sm">Eliminar</button>
                         </div>
                     </div>
-                      <hr class="my-3">
+                 </div>
 
-                    <div class="mb-4">
-                        <label class="form-label font-weight-bold">Capturas chat</label>
-                        <div id="scrollCapturasChat" class="border border-2 border-primary p-2 overflow-auto">
-                            <div class="item text-muted" style="font-size: 0.85rem;">No hay capturas</div>
+                     <!--  capturas del chat -->
+                         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-2">
+                     <h3 class="m-0 font-weight-bold text-dark">
+                                <i class="bi bi-file-earmark-text-fill me-2 text-cyan-400"></i>
+                                <span class="text-slate-100 font-semibold">Capturas del chat</span>
+                    </h3>
+                </div>
+
+                <div class="card shadow-sm p-3 mb-4 border border-indigo-500/30 bg-slate-900/60 text-slate-100 rounded-4">
+                                 <div id="scrollCapturasChat" class="bg-slate-900 placeholder:text-slate-500 border rounded-3 p-3 overflow-auto" style="max-height: 50vh;">
+
+                            <div class="item fst-italic text-center py-3 text-slate-400" style="font-size: 0.9rem;">
+                                No hay capturas disponibles
+                            </div>
+
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <button id="agregarCapturaChatBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
-                            <button id="eliminarCapturaChatBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
+                            <button id="agregarCapturaChatBtn" type="button" class="btn btn-success btn-sm text-sm">Agregar</button>
+                            <button id="eliminarCapturaChatBtn" type="button" class="btn btn-danger btn-sm text-sm">Eliminar</button>
                         </div>
-                    </div>
-                           <hr class="my-3">
-
-                    <div class="mb-4">
-                        <label class="form-label font-weight-bold">Multimedias: </label>
-                        <div id="scrollMultimedia" class="border border-2 border-primary p-2 overflow-auto">
-                            <div class="item text-muted" style="font-size: 0.85rem;">No hay elementos</div>
-                        </div>
-                        <textarea type="text" id="inputDescripcionMultimedia" class="form-control form-control-sm mt-2" placeholder="Descripcion"></textarea>
-                        <br>
-                        <button id="agregarMultimediaBtn" type="button" class="btn btn-outline-success btn-sm text-sm">Agregar</button>
-                        <button id="eliminarMultimediaBtn" type="button" class="btn btn-outline-danger btn-sm text-sm">Eliminar</button>
                     </div>
                     <div class="text-end mb-2">
                         <button id="generarReporteBtn" onclick="generarReporte(event)" class="btn btn-success btn-sm text-sm">Generar reporte</button>
@@ -258,13 +346,13 @@
         </div>
 
     </div>
-            <div class="cuerpo w-9/12">
+            <div class="bg-white cuerpo w-[72%]">
             <!-- Header -->
             <div class="gradiente px-20 py-6 border-b">
                 <p id="ParrafoWhatsApp"> Conversación </p>
             </div>
             <!-- Chat propiamente dicho -->
-                <div class="cuerpo px-20 py-6 overflow-y-auto h-5/6" id="idContenido">                <!-- Carga de mensajes en forma dinamica -->
+                <div class="cuerpo bg-white px-20 py-6 overflow-y-auto h-5/6" id="idContenido">                <!-- Carga de mensajes en forma dinamica -->
             </div>
 </section>
     <script type="text/javascript">
@@ -276,7 +364,7 @@
     const scroll = document.getElementById(scrollV);
     scroll.innerHTML = '';
     if (!lista || lista.length === 0) {
-        scroll.innerHTML = '<div class="item text-muted" style="font-size: 0.85rem;">No hay elementos</div>';
+        scroll.innerHTML = '<div class="item text-slate-400" style="font-size: 0.85rem;">No hay elementos</div>';
         return;
     }
 
@@ -286,10 +374,10 @@
         const displayText = (typeof item === 'object' && item !== null) ? item.display : item;
         div.textContent = `${index + 1}. ${displayText}`;
         div.style.cursor = 'pointer';
-        div.className = 'item p-2 border-bottom border-2 border-secondary-subtle';
         if (index === currentIndex) {
-            div.style.backgroundColor = '#e2e8f0';
-            div.style.fontWeight = 'bold';
+            div.className = 'item p-2 bg-indigo-600/30 text-indigo-200 border border-indigo-500/40 fw-bold';
+        } else {
+            div.className = 'item p-2 text-slate-100 bg-slate-800 border-bottom border-2 border-secondary-subtle';
         }
 
         div.addEventListener('click', () => {
@@ -310,7 +398,7 @@
                 autoUpdateInput: false,
                 locale: {
                 format: 'D/M/YY',
-                "separator": " - ",
+                "separatfor": " - ",
                 "applyLabel": "Agregar",
                 "cancelLabel": "Cancelar",
                 "fromLabel": "From",
@@ -356,10 +444,9 @@ $('input[name="Fecha"]').on('apply.daterangepicker', function(ev, picker) {
     window.fechas.push({
         start: picker.startDate.format('D/M/YY'),
         end: picker.endDate.format('D/M/YY'),
-        display: formattedRange
+        display: formattedRange,
+        reference: ""
     });
-    console.log(window.fechas);
-    console.log(selectedIndexDate);
     window.fechas.sort((a, b) => {
     const dateA = moment(a.start, 'D/M/YY');
     const dateB = moment(b.start, 'D/M/YY');
@@ -368,7 +455,13 @@ $('input[name="Fecha"]').on('apply.daterangepicker', function(ev, picker) {
         console.log(selectedIndexDate);
     renderList("scrollFechas",window.fechas,selectedIndexDate,(date,nuevoIndex) => {
             selectedIndexDate = nuevoIndex;
-                console.log(selectedIndexDate);
+            //Cuando precio uno de los intervalos me lleva al primer mensaje encontrado
+            if (window.fechas[selectedIndexDate].reference){
+                document.getElementById(window.fechas[selectedIndexDate].reference).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
         });
     }
 );

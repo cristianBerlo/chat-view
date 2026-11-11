@@ -66,7 +66,6 @@ function GuardarNombres(Array_JSON){
 }
 
 function CargarNombresFront(nombres){
-    arrayNameyText=[];
     for (let index = 0; index < nombres.length; index++) {
 
         let objNameYText = {
@@ -104,7 +103,7 @@ function CargarNombresFront(nombres){
     }
     ArrayNameyText.forEach(participante => {
                 const li = document.createElement("li");
-                li.className = 'list-group-item text-sm py-2 border-bottom';
+                li.className = 'list-group-item bg-slate-800 text-slate-200 border-slate-700 text-sm py-2 border-bottom';
                 li.textContent = participante.texto;
                 listaNombresPart.appendChild(li);
             });
@@ -309,6 +308,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
 
 function createMsgDate(date,msg){
             let divFlex = document.createElement("div");
+            divFlex.id = "Mensaje-fecha-" + date;
             divFlex.classList.add('flex','justify-center','items-center');
             let divBg_white = document.createElement("div");
             divBg_white.classList.add('bg-slate-200', 'w-full', 'rounded-lg', 'p-2');
@@ -333,10 +333,8 @@ async function CargarMensajesFront(path, limit){
     const fragment = document.createDocumentFragment();
 
     if(window.fechas.length>0){
-        console.log("entre aca");
             let flag_date= Array.from({ length: fechas.length }, () => false);
             for (let index=0; index < ArrayJSON.length; index++) {
-
                 const nombre = ArrayJSON[index].Nombre;
                 const archivo = ArrayJSON[index].NameFileWhitExtension;
                 const mensaje = ArrayJSON[index].Mensaje;
@@ -344,19 +342,18 @@ async function CargarMensajesFront(path, limit){
                 const fecha = ArrayJSON[index].Fecha;
                 let next = false;
                 let index_date=0;
-
                 while (!next && index_date<window.fechas.length) {
-
                     if (toMs(ArrayJSON[index].Fecha) >= toMs(window.fechas[index_date].start) && toMs(ArrayJSON[index].Fecha) <= toMs(window.fechas[index_date].end)) {
                         if (toMs(ArrayJSON[index].Fecha) > prev_date) {
                             if (!flag_date[index_date]) {
                                 //pusheo el mensaje que diga que empezo el intervalo
-                                fragment.appendChild(createMsgDate(window.fechas[index_date].display, "Inicio del periodo:"));
+                                const msgSDate = createMsgDate(window.fechas[index_date].display, "Inicio del periodo:");
+                                fragment.appendChild(msgSDate);
                                 flag_date[index_date] = true;
+                                window.fechas[index_date].reference=msgSDate.id;
                             }
                             fragment.appendChild(createMsgDate(fecha,""));
                         }
-
                         fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha + " " + hora));
                         prev_date=toMs(ArrayJSON[index].Fecha) ;
                         next=true; //No avanzo hasta que no encuentro un periodo valido para el mensaje
@@ -403,7 +400,6 @@ btnAgregar.addEventListener("click",() =>{
         })
 
     }else{
-
         if(InputText.value != ""){
             ArrayNameyText[indice].texto = ArrayNameyText[indice].nombre+ " - " + InputText.value;
              while(listaNombresPart.hasChildNodes()){
@@ -411,6 +407,7 @@ btnAgregar.addEventListener("click",() =>{
             }
             ArrayNameyText.forEach(participante => {
                 const li = document.createElement("li");
+                li.className = 'list-group-item bg-slate-800 text-slate-200 border-slate-700 text-sm py-2 border-bottom';
                 li.textContent = participante.texto;
                 listaNombresPart.appendChild(li);
             });
@@ -430,7 +427,12 @@ btnAgregar.addEventListener("click",() =>{
 async function open_file() {
     const result = await callBackPromise('open_file');
     let ArrayParaNombres = result.json;
+    ArrayNameyText = [];
+    nombres=[];
+    console.log("nombre "+nombres + "array "+ ArrayNameyText);
     nombres = GuardarNombres(ArrayParaNombres);
+        console.log("nombre "+nombres + "array "+ ArrayNameyText);
+
     ArrayJSON = result.json;
     jsonPath = result.path;
     //renuevo los datos del contenedor
