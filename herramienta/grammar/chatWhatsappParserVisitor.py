@@ -69,7 +69,14 @@ class chatWhatsappParserVisitor(ParseTreeVisitor):
             author = "SistemaDeWhatsApp"
         else:
             author = sauthor
-        txt =  date + time + author
+        #campos que pueden estar no presentes en el txt
+        lbrack = ctx.LBRACK().getText() if ctx.LBRACK() else ""
+        comma = ctx.COMMA().getText() if ctx.COMMA() else ""
+        rbrack = ctx.RBRACK().getText() if ctx.RBRACK() else ""
+        dash = ctx.DASH().getText() if ctx.DASH() else ""
+
+        txt =  lbrack + date + comma+ time + rbrack + dash  + author
+
         author = author.lstrip()
         author = author.removesuffix(":")
         header_data = {"Nombre": author,
