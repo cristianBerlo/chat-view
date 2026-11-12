@@ -139,12 +139,10 @@ class Api(QObject):
 
     @pyqtSlot(result='QVariant')
     def open_file(self,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):  #
-
+        #solo dejo que abra o txt o archivos comprimidos
         file_types = (
             "Compressed Files (*.zip *.tar *.gz *.rar *.7z);;"
             "TXT (*.txt);;"
-            "JSON (*.json);;"
-            "All files (*.*)"
         )
         path_str, _ = QFileDialog.getOpenFileName(
             self._window, "Open File", "", file_types
@@ -154,7 +152,7 @@ class Api(QObject):
 
         path = Path(path_str)
         compressed_extensions = {'.zip', '.tar', '.gz', '.rar', '.7z', '.bz2', '.xz'}
-
+        #si es un archivo comprimido lo extraigo
         if path.suffix.lower() in compressed_extensions:
             try:
                 res = extraer_zip(path)
@@ -162,7 +160,6 @@ class Api(QObject):
                 self.dir = res.get("dir")
                 self.zip  = hashFiles([path.name],path.parent, "Archivo comprido del chat")
                 #guardo el hash del zip abierto
-                # Si me encuentro con un zip lo extraigo y retorno los datos del .txt
             except FileNotFoundError:
                 print("error al abrir el archivo")
                 return {"res":False}
@@ -261,7 +258,8 @@ class Api(QObject):
                     kfile.append(json_msg.get("NameFileWhitExtension"))
         lista_hashes_multimedias_chat = []
         #Calculo los hashes de todos los archivos alcanzados y los agregados
-        lista_hashes_multimedias_chat += self.zip # or en caso de que la entrada haya sido un .txt en lugar de un comprimido
+        if self.zip:
+            lista_hashes_multimedias_chat += self.zip # or en caso de que la entrada haya sido un .txt en lugar de un comprimido
         lista_hashes_multimedias_chat += hashFiles([Path(self.selected_chat).name],self.dir,"Txt del chat")
         lista_hashes_multimedias_chat += hashFiles(kfile, self.dir / "fuentes","Multimedia chat")
         lista_hashes_multimedias_chat += hashFiles(lista_multimedia, self.dir / "adicionales","Multimedias agregados")
