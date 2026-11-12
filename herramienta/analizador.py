@@ -14,7 +14,7 @@ import sys
 import os
 from pathlib import Path
 from PyQt6.QtCore import QObject, QUrl, pyqtSlot,QFile, QTextStream
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
+from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QWidget, QVBoxLayout
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtGui import QKeySequence, QShortcut
@@ -114,19 +114,25 @@ class Api(QObject):
 
     @pyqtSlot(str)
     def open_file_window(self, relative_path):
-
         absolute_path = Path(self.dir) / relative_path.lstrip("/")
-
-        secondary_window = QWebEngineView(self._window)
-
+        secondary_window = QMainWindow(self._window)
         secondary_window.setWindowTitle("File Viewer")
         secondary_window.resize(800, 600)
 
-        secondary_window.load(
-            QUrl.fromLocalFile(str(absolute_path.resolve()))
-        )
+        # Create a central widget and layout
+        central_widget = QWidget(secondary_window)
+        layout = QVBoxLayout(central_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
 
+        # Create the web view and add it to the layout
+        web_view = QWebEngineView(central_widget)
+        web_view.load(QUrl.fromLocalFile(str(absolute_path.resolve())))
+        layout.addWidget(web_view)
+
+        secondary_window.setCentralWidget(central_widget)
         secondary_window.show()
+
+        # Keep a reference to prevent garbage collection
         if not hasattr(self, "_secondary_windows"):
             self._secondary_windows = []
         self._secondary_windows.append(secondary_window)
@@ -161,6 +167,18 @@ class Api(QObject):
             except FileNotFoundError:
                 print("error al abrir el archivo")
                 return {"res":False}
+        else:
+            try:
+
+                with open(path_str, 'rb') as f:
+                    file_path_obj = Path(f.name)
+                    self.selected_chat = file_path_obj.name
+                    self.dir = file_path_obj.parent
+
+            except FileNotFoundError:
+                print("error al abrir el archivo")
+                return {"res": False}
+
         # Parseo el archivo seleccionado  para generar el json
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
         lexer = lexer_class(file)
@@ -326,7 +344,8 @@ def serve_ui_assets(filename):
 
 @flask_app.route("/<path:filename>")
 def serve_chats(filename):
-    return send_from_directory(HERRAMIENTA_DIR, filename)
+    return send_from_directory("", filename)
+
 
 @flask_app.route("/qtwebchannel/qwebchannel.js")
 def serve_qwebchannel():
