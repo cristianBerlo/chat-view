@@ -157,27 +157,20 @@ class Api(QObject):
 
         if path.suffix.lower() in compressed_extensions:
             try:
-                with open(path_str, 'rb') as f:
-                    res = extraer_zip(path)
-                    self.selected_chat = res.get("file")
-                    self.dir = res.get("dir")
-                    self.zip  = hashFiles([path.name],path.parent, "Archivo comprido del chat")
-                    #guardo el hash del zip abierto
-                    # Si me encuentro con un zip lo extraigo y retorno los datos del .txt
+                res = extraer_zip(path)
+                self.selected_chat = res.get("file")
+                self.dir = res.get("dir")
+                self.zip  = hashFiles([path.name],path.parent, "Archivo comprido del chat")
+                #guardo el hash del zip abierto
+                # Si me encuentro con un zip lo extraigo y retorno los datos del .txt
             except FileNotFoundError:
                 print("error al abrir el archivo")
                 return {"res":False}
         else:
-            try:
+            print("entre bien")
+            self.selected_chat = path
+            self.dir = path.parent
 
-                with open(path_str, 'rb') as f:
-                    file_path_obj = Path(f.name)
-                    self.selected_chat = file_path_obj.name
-                    self.dir = file_path_obj.parent
-
-            except FileNotFoundError:
-                print("error al abrir el archivo")
-                return {"res": False}
 
         # Parseo el archivo seleccionado  para generar el json
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
