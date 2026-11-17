@@ -24,8 +24,20 @@ class chatWhatsappParserVisitor(ParseTreeVisitor):
     )
     _COMPILED_PATTERN = re.compile(_PATTERN_STR)
 
+    ED_MSG = ["<Se editó este mensaje.>"]
+    _ed_msg = "|".join([re.escape(d) for d in ED_MSG])
+    _COMPILED_ED = re.compile(f"(.*?) {_ed_msg}")
+
     @staticmethod
     def is_file(text: str) -> dict:
+        edit = False
+        match = chatWhatsappParserVisitor._COMPILED_ED.match(text)
+        print(text)
+        print(match)
+        if match:
+            edit = True
+            text = match.group(1)
+
         match = chatWhatsappParserVisitor._COMPILED_PATTERN.match(text)
         if match:
             data = match.groupdict()
@@ -35,13 +47,15 @@ class chatWhatsappParserVisitor(ParseTreeVisitor):
 
             return {
                 "NameFileWhitExtension": filename.strip(),
-                "Mensaje": rest
+                "Mensaje": rest,
+                "edit": edit
             }
 
         # Fallback if it's a regular message without a file
         return {
             "NameFileWhitExtension": "",
-            "Mensaje": text
+            "Mensaje": text,
+            "edit": edit
         }
 
     def visitChat(self, ctx: chatWhatsappParser.ChatContext):
