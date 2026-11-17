@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* STYLES */
 .scroll-container {
     max-height: 150px;
@@ -131,3 +135,56 @@ html {
 #listaParticipantes .list-group-item:last-child {
       border-bottom-width: 3px !important;
   }
+#textEditor {
+        width: 100%;
+        height: 400px;
+        padding: 14px;
+        font-size: 15px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        box-sizing: border-box;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+    }
+
+    #textEditor:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .editor-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    #saveBtn {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    #saveBtn:hover {
+        background-color: #0b5ed7;
+    }
+
+    #status-message {
+        font-size: 14px;
+        color: #198754;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #status-message.show {
+        opacity: 1;
+    }
