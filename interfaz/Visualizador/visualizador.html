@@ -346,16 +346,49 @@
         </div>
 
     </div>
-            <div class=" cuerpo w-[72%]">
-            <!-- Header -->
-           <div class="gradiente px-20 py-6 border-b" style="display: flex; align-items: center; justify-content: space-between;">
-                <p id="ParrafoWhatsApp" style="margin: 0;"> Conversación </p>
-                <img src="/visualizador/libs/unsl-logo.png" style="height: 40px;">
+            <div class="cuerpo w-[72%]">
+    <!-- Header Tabs -->
+    <ul class="nav nav-tabs mb-3" id="rightTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active text-xs font-weight-bold" id="tab-conversacion" data-bs-toggle="tab" data-bs-target="#content-conversacion" type="button" role="tab" aria-controls="content-conversacion" aria-selected="true">Chat</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-xs font-weight-bold" id="tab-txt" data-bs-toggle="tab" data-bs-target="#content-txt" type="button" role="tab" aria-controls="content-txt" aria-selected="false">txt</button>
+        </li>
+    </ul>
+
+    <div class="gradiente px-20 py-6 border-b" style="display: flex; align-items: center; justify-content: space-between;">
+        <img src="/visualizador/libs/unsl-logo.png" style="height: 50px;">
+        <p id="ParrafoWhatsApp" style="margin: 0;"> Conversación </p>
+        <img src="/visualizador/libs/logo-mpf.png" style="height: 50px;">
+    </div>
+
+    <div class="tab-content" id="rightTabsContent">
+
+           <div class="tab-pane fade show active p-4" id="content-conversacion" role="tabpanel" aria-labelledby="tab-conversacion">
+            <!-- Contenedor con altura máxima controlada y flexbox para evitar desbordamientos raros -->
+            <div class="cuerpo px-4 py-6 overflow-y-auto" style="height: 80vh; max-height: 80vh;" id="idContenido">
+                <!-- Carga de mensajes en forma dinamica -->
             </div>
-            <!-- Chat propiamente dicho -->
-                <div class="cuerpo  px-20 py-6 overflow-y-auto h-5/6" id="idContenido">                <!-- Carga de mensajes en forma dinamica -->
+        </div>
+
+        <!-- Text Editor Tab Content -->
+        <div class="tab-pane fade p-4" style="overflow-y: scroll; overflow-x: hidden; max-height: 85vh;" id="content-txt" role="tabpanel" aria-labelledby="tab-txt">
+            <textarea id="textEditor" disabled></textarea>
+            <div class="editor-footer">
+            <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="enableEditCheckbox">
+                        <label class="form-check-label text-sm" for="enableEditCheckbox" style="cursor: pointer;">
+                            Habilitar edición
+                        </label>
+                    </div>
+                <button id="saveBtn" disabled>Guardar</button>
+
             </div>
-                        </div>
+        </div>
+
+    </div>
+</div>
 </section>
     <script type="text/javascript">
         window.fechas = [];

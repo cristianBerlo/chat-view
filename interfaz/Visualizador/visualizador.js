@@ -184,126 +184,116 @@ function createMultimedia(chatFolderName, arrNyE, type,container) {
     a.prepend(icon);
 
 }
+function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora, edit) {
 
-function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fechaYhora){
+    const principal = (nombre == nombreSeleccionado);
+    const sistema = (nombre == msjDelSistema);
 
-        const principal = (nombre == nombreSeleccionado)
-        const sistema =    (nombre == msjDelSistema)
-        let divFlex = document.createElement("div");
-        let divPull = document.createElement("div");
-        if(!sistema){
-            let alineacion = principal ? 'justify-end' : 'justify-start';
-            divFlex.classList.add('flex', alineacion, 'mb-12', 'w-full');
-            divPull.classList.add('pull_left', 'userpic_wrap', 'w-12', 'mr-4', 'self-end');
-            if(!principal){
-            divFlex.appendChild(divPull);}
-            let marg = principal ? 'ml-4' : 'mr-4';
-            divPull.classList.add('pull_left', 'userpic_wrap', 'w-12', marg, 'self-end');
-            divFlex.appendChild(divPull);
-            let divUserPic = document.createElement("div");
-            let pic = principal ? 'userpic5' : 'userpic8';
-            divUserPic.classList.add('userpic', pic);
-            divUserPic.style.width = '42px';
-            divUserPic.style.height = '42px';
-            let divInitials = document.createElement("div");
-            divInitials.classList.add('initials');
-            divInitials.style.lineHeight = '42px';
-            divInitials.textContent = principal ? `${iniciales1}` : `${iniciales2}`;
-            divUserPic.appendChild(divInitials);
-            divPull.appendChild(divUserPic);
-        }else{
-            divFlex.classList.add('flex','justify-center','items-center'); // Mensaje del Sistema
-        }
-        let divFlexCol = document.createElement("div");
-        divFlexCol.classList.add('flex', 'flex-col');
-        divFlex.appendChild(divFlexCol);
-        let divBg_white = document.createElement("div");
+    let divFlex = document.createElement("div");
+    let divFlexCol = document.createElement("div");
+    divFlexCol.classList.add('flex', 'flex-col');
 
-        if (sistema) {
-            divBg_white.classList.add('bg-slate-200', 'w-full', 'rounded-lg', 'p-2');
-         } else if (principal) {
-            divBg_white.classList.add('p-6','w-96','rounded-3xl','rounded-br-none', 'shadow-sm', 'mb-2');
-            divBg_white.style.background = '#dcf8c6';
-          } else {
-            divBg_white.classList.add('bg-white','p-6','w-96','rounded-3xl','rounded-bl-none', 'shadow-sm', 'mb-2');
-        }
+    let divBg_white = document.createElement("div");
 
-        divFlex.appendChild(divFlexCol);
-        divFlexCol.appendChild(divBg_white);
+    if (sistema) {
+        divFlex.classList.add('flex', 'justify-center', 'items-center', 'w-full', 'mb-4');
+        divBg_white.classList.add('bg-slate-200', 'w-full', 'rounded-lg', 'p-2', 'text-center');
+
         let mb = document.createElement("p");
-        mb.classList.add('mb-1');
+        mb.classList.add('mb-1', 'text-sm', 'text-gray-700');
+
         const isLargeNumber = (element) => element.nombre === nombre;
-        if(ArrayNameyText.findIndex(isLargeNumber) != -1){ // Acá tambien le doy valor al mensaje del sistema
-                mb.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto;
-        }else{
-            mb.textContent = `${mensaje}`; // Mensaje del Sistema
+        let index = ArrayNameyText.findIndex(isLargeNumber);
+        if (index != -1) {
+            mb.textContent = ArrayNameyText[index].texto;
+        } else {
+            mb.textContent = `${mensaje}`;
         }
         divBg_white.appendChild(mb);
 
-        // Le creo otro small para guardar el mensaje, solo si no es el sistema
-        const textGray = document.createElement("small");
-        //textGray2.classList.add('text-gray-500','fo
-    //
-    // nt-light');
-        textGray.classList.add('text-black','font-light','overflow-hidden', 'overflow-ellipsis', 'block','text-base');
-        if(!sistema){
-            if(archivo != ""){ // Si hay archivo
+    } else {
 
-                const arrNyE = archivo.split('.');
-                let punto  = ".";
+        let alineacion = principal ? 'justify-end' : 'justify-start';
+        divFlex.classList.add('flex', alineacion, 'mb-12', 'w-full');
 
-                if(punto+arrNyE[1] === ".webp" || punto+arrNyE[1] === ".png" || punto+arrNyE[1] === ".jpg" || punto+arrNyE[1] === ".jpeg" ||
-                punto+arrNyE[1] === ".gif" || punto+arrNyE[1] === ".tiff"){ // TODO LO QUE TENGA QUE VER CON IMAGENES
-                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"img",divBg_white);
+        let divPull = document.createElement("div");
+        let marg = principal ? 'ml-4' : 'mr-4';
+        divPull.classList.add('pull_left', 'userpic_wrap', 'w-12', marg, 'self-end');
 
-                }else if(punto+arrNyE[1] === ".mp4" || punto+arrNyE[1] === ".mkv" || punto+arrNyE[1] === ".avi" || punto+arrNyE[1] === ".mov" ||
-                punto+arrNyE[1] === ".flv" || punto+arrNyE[1] === ".divx"){ // TODO LO QUE TENGA QUE VER CON VIDEOS.
-
-                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"video",divBg_white);
-
-                }else if(punto+arrNyE[1] === ".mp3" || punto+arrNyE[1] === ".m4a" || punto+arrNyE[1] === ".aac" || punto+arrNyE[1] === ".wav" || punto+arrNyE[1] === ".aiff" ||
-                punto+arrNyE[1] === ".wma" || punto+arrNyE[1] === ".opus" || punto+arrNyE[1] === ".ogg"){ // TODO LO QUE TENGA QUE VER CON MUSICA.
-                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"audio",divBg_white);
-
-                }else if(punto+arrNyE[1] === ".pdf" || punto+arrNyE[1] === ".doc" || punto+arrNyE[1] === ".docx" || punto+arrNyE[1] === ".txt" ||
-                punto+arrNyE[1] === ".odt" || punto+arrNyE[1] === ".xlsx" || punto+arrNyE[1] === ".pptx"){
-                    createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
-
-                }else if(punto+arrNyE[1] === ".py" || punto+arrNyE[1] === ".rar" || punto+arrNyE[1] === ".zip" ||  punto+arrNyE[1] === ".html" ||
-                punto+arrNyE[1] === ".tmp" || punto+arrNyE[1] === ".dat" || punto+arrNyE[1] === ".exe" || punto+arrNyE[1] === ".deb" ||
-                punto+arrNyE[1] === ".vcf" || punto+arrNyE[1] === ".dmg" || punto+arrNyE[1] === ".psd" || punto+arrNyE[1] === ".sql"){
-                     createMultimedia(chatFolderName+"/fuentes",arrNyE,"",divBg_white);
-                }
-
-            }}
-            let a = document.createElement("a");
-            let icon = document.createElement("i");
-            let erLlamada = /^null$/;
-            let erLlamadaperdida = /^Llamada perdida$/;
-            //Faltaria para ver videollamadas
-            if(erLlamada.test(mensaje)){
-                icon.classList.add('fa-solid','fa-phone','arrow-up-right','fa-2x');
-                a.appendChild(icon);
-                divBg_white.appendChild(a);
-                textGray.textContent = 'Llamada'
-            }else if(erLlamadaperdida.test(mensaje)){
-                icon.classList.add('fa-solid','fa-phone-slash','arrow-up-right','fa-2x');
-                a.appendChild(icon);
-                divBg_white.appendChild(a);
-                textGray.textContent = 'Llamada perdida'
-            }else{
-                textGray.textContent = `${mensaje}`;
-            }
-            divBg_white.appendChild(textGray);
-        // La hora la comparten tanto el que tiene el sistema como el que no tiene el sistema.
-        let textGrayHora = document.createElement("small");
-        textGrayHora.classList.add('text-black','font-light');
-        textGrayHora.textContent = `${fechaYhora}`;
-        divFlexCol.appendChild(textGrayHora);
-        if(principal){
+        if (!principal) {
             divFlex.appendChild(divPull);
         }
-        return divFlex;
+
+        let divUserPic = document.createElement("div");
+        let pic = principal ? 'userpic5' : 'userpic8';
+        divUserPic.classList.add('userpic', pic);
+        divUserPic.style.width = '42px';
+        divUserPic.style.height = '42px';
+
+        let divInitials = document.createElement("div");
+        divInitials.classList.add('initials');
+        divInitials.style.lineHeight = '42px';
+        divInitials.textContent = principal ? `${iniciales1}` : `${iniciales2}`;
+
+        divUserPic.appendChild(divInitials);
+        divPull.appendChild(divUserPic);
+
+        if (principal) {
+            divBg_white.classList.add('p-6', 'w-96', 'rounded-3xl', 'rounded-br-none', 'shadow-sm', 'mb-2');
+            divBg_white.style.background = '#dcf8c6';
+        } else {
+            divBg_white.classList.add('bg-white', 'p-6', 'w-96', 'rounded-3xl', 'rounded-bl-none', 'shadow-sm', 'mb-2');
+        }
+        if (archivo != "") {
+            const arrNyE = archivo.split('.');
+            let punto = ".";
+            let ext = (punto + arrNyE[1]).toLowerCase();
+
+            if ([".webp", ".png", ".jpg", ".jpeg", ".gif", ".tiff"].includes(ext)) {
+                createMultimedia(chatFolderName + "/fuentes", arrNyE, "img", divBg_white);
+            } else if ([".mp4", ".mkv", ".avi", ".mov", ".flv", ".divx"].includes(ext)) {
+                createMultimedia(chatFolderName + "/fuentes", arrNyE, "video", divBg_white);
+            } else if ([".mp3", ".m4a", ".aac", ".wav", ".aiff", ".wma", ".opus", ".ogg"].includes(ext)) {
+                createMultimedia(chatFolderName + "/fuentes", arrNyE, "audio", divBg_white);
+            } else {
+                createMultimedia(chatFolderName + "/fuentes", arrNyE, "", divBg_white);
+            }
+        }
+
+        let textGray = document.createElement("small");
+        textGray.classList.add('text-black', 'font-light', 'overflow-hidden', 'overflow-ellipsis', 'block', 'text-base');
+
+        let a = document.createElement("a");
+        let icon = document.createElement("i");
+        let erLlamada = /^null$/;
+        let erLlamadaperdida = /^Llamada perdida$/;
+
+        if (erLlamada.test(mensaje)) {
+            icon.classList.add('fa-solid', 'fa-phone', 'arrow-up-right', 'fa-2x');
+            a.appendChild(icon);
+            divBg_white.appendChild(a);
+            textGray.textContent = 'Llamada';
+        } else if (erLlamadaperdida.test(mensaje)) {
+            icon.classList.add('fa-solid', 'fa-phone-slash', 'arrow-up-right', 'fa-2x');
+            a.appendChild(icon);
+            divBg_white.appendChild(a);
+            textGray.textContent = 'Llamada perdida';
+        } else {
+            textGray.textContent = `${mensaje}`;
+        }
+        divBg_white.appendChild(textGray);
+
+        if (principal) {
+            divFlex.appendChild(divPull);
+        }
+    }
+    divFlex.appendChild(divFlexCol);
+    divFlexCol.appendChild(divBg_white);
+    let textGrayHora = document.createElement("small");
+    textGrayHora.classList.add('text-black', 'font-light');
+    textGrayHora.textContent = edit ? `editado ${fechaYhora}` : `${fechaYhora}`;
+    divFlexCol.appendChild(textGrayHora);
+    return divFlex;
 }
 
 function createMsgDate(date,msg){
@@ -340,6 +330,7 @@ async function CargarMensajesFront(path, limit){
                 const mensaje = ArrayJSON[index].Mensaje;
                 const hora = ArrayJSON[index].Hora;
                 const fecha = ArrayJSON[index].Fecha;
+                const edit = ArrayJSON[index].edit;
                 let next = false;
                 let index_date=0;
                 while (!next && index_date<window.fechas.length) {
@@ -354,7 +345,7 @@ async function CargarMensajesFront(path, limit){
                             }
                             fragment.appendChild(createMsgDate(fecha,""));
                         }
-                        fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha + " " + hora));
+                        fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha + " " + hora,edit));
                         prev_date=toMs(ArrayJSON[index].Fecha) ;
                         next=true; //No avanzo hasta que no encuentro un periodo valido para el mensaje
                         //Como los mensajes estan ordenados si no hay un periodo para este mensaje no va a existir un periodo para los demas
@@ -371,12 +362,13 @@ async function CargarMensajesFront(path, limit){
                 const mensaje = ArrayJSON[index].Mensaje;
                 const hora= ArrayJSON[index].Hora;
                 const fecha= ArrayJSON[index].Fecha;
+                const edit = ArrayJSON[index].edit;
                 if(toMs(ArrayJSON[index].Fecha) > prev_date){
                              //pushe0 el nuevo dia
                         fragment.appendChild(createMsgDate(fecha,""));
                     }
                 prev_date=toMs(ArrayJSON[index].Fecha) ;
-                fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha+" "+hora));
+                fragment.appendChild(MensajesDinamicos(path, iniciales1, iniciales2, msjDelSistema, nombre, archivo, mensaje, fecha+" "+hora,edit));
         }}
         id_div.appendChild(fragment);
 }
@@ -432,20 +424,63 @@ async function open_file() {
     console.log("nombre "+nombres + "array "+ ArrayNameyText);
     nombres = GuardarNombres(ArrayParaNombres);
         console.log("nombre "+nombres + "array "+ ArrayNameyText);
-
     ArrayJSON = result.json;
     jsonPath = result.path;
     //renuevo los datos del contenedor
     CargarNombresFront(nombres);
     nombreSeleccionado = nombres[0];
-    let id = document.getElementById("idContenido");
-     while(id.firstChild) {
-        id.removeChild(id.firstChild);
-    }
-        indexMensajes=0;
-        CargarMensajesFront(jsonPath,400);
+      recargarMensajes(100);
+          const editor= document.getElementById("textEditor");
+        editor.value = "";
+        result.txt.forEach((line)=>{
+        editor.value +=  line;
+    });
 }
 
+async function save_txt(){
+    txt = document.getElementById("textEditor").value;
+    const result = await callBackPromise('save_txt',txt);
+       let ArrayParaNombres = result.json;
+    ArrayNameyText = [];
+    nombres=[];
+    console.log("nombre "+nombres + "array "+ ArrayNameyText);
+    nombres = GuardarNombres(ArrayParaNombres);
+    ArrayJSON = result.json;
+    CargarNombresFront(nombres);
+    recargarMensajes(100);
+}
+
+document.getElementById("saveBtn").addEventListener('click', () => {
+    save_txt();
+});
+
+
+
+
+document.getElementById('enableEditCheckbox').addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    const textEditor = document.getElementById('textEditor');
+    const saveBtn = document.getElementById('saveBtn');
+
+    let confirmacion = true;
+
+    if (isChecked && textEditor.disabled) {
+        confirmacion = confirm("Los cambios al txt deben realizarse únicamente para corregir errores de la generación.");
+    }
+
+    if (confirmacion) {
+        textEditor.disabled = !isChecked;
+        saveBtn.disabled = !isChecked;
+        saveBtn.style.opacity = isChecked ? '1' : '0.6';
+        saveBtn.style.cursor = isChecked ? 'pointer' : 'not-allowed';
+
+        if (isChecked) {
+            textEditor.focus();
+        }
+    } else {
+        e.target.checked = false;
+    }
+});
 
 function recargarMensajes(lim){
     indexMensajes = 0;
