@@ -20,6 +20,15 @@ from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtGui import QKeySequence, QShortcut
 
 
+def parse_file(file_org,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
+    file = antlr4.FileStream(file_org, encoding = 'utf-8')
+    lexer = lexer_class(file)
+    stream = antlr4.CommonTokenStream(lexer)
+    parser = parser_class(stream)
+    parse_tree = parser.chat()
+    visitor = visitor_class()
+    return visitor.visit(parse_tree)
+
 def resource_path(relative_path):
     if getattr(sys, '_MEIPASS', False):
         base_path = Path(sys._MEIPASS)
@@ -170,15 +179,9 @@ class Api(QObject):
 
 
         # Parseo el archivo seleccionado  para generar el json
-        file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
-        lexer = lexer_class(file)
-        stream = antlr4.CommonTokenStream(lexer)
-        parser = parser_class(stream)
-        parse_tree = parser.chat()
-        visitor = visitor_class()
-        res = visitor.visit(parse_tree)
+        res = parse_file(self.selected_chat)
         json = res.get("json")
-        return {"json":json, "res": True,   "path": self.dir.name}
+        return {"json":json, "res": True,   "path": self.dir.name, "txt":res.get("txt")}
 
 
     #metodo para agregar una imagen a la lista
@@ -222,13 +225,7 @@ class Api(QObject):
     @pyqtSlot('QVariantMap', 'QVariantMap', 'QVariantMap', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', 'QVariant', str,str,'QVariant', result='QVariant')
     def gen_repo(self,perito,aportante,dispositivo,datos_formulario,mapa_participantes, lista_multimedia,lista_chat,array_nombres,dates,html,desc,array_dis,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
         # Parseo nuevamente el file para poder generar el txt filtrado y el json filtrado
-        file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
-        lexer = lexer_class(file)
-        stream = antlr4.CommonTokenStream(lexer)
-        parser = parser_class(stream)
-        parse_tree = parser.chat()
-        visitor = visitor_class()
-        res = visitor.visit(parse_tree)
+        res = parse_file(self.selected_chat)
         json = res.get("json", [])
         txt = res.get("txt", [])
         kfile = []
@@ -279,7 +276,7 @@ class Api(QObject):
             "chat_comprimido.zip",
             "ZIP files (*.zip)"
         )
-        create_zip(selection,self.dir)
+        create_zip(selection+".zip",self.dir)
 
         return {"hashes":lista_hashes_multimedias_chat}
 
@@ -287,12 +284,6 @@ class Api(QObject):
     def export_chat(self, dates,html,lexer_class=chatWhatsappLexer, parser_class=chatWhatsappParser, visitor_class=chatWhatsappParserVisitor):
 
         file = antlr4.FileStream(self.selected_chat, encoding='utf-8')
-        lexer = lexer_class(file)
-        stream = antlr4.CommonTokenStream(lexer)
-        parser = parser_class(stream)
-        parse_tree = parser.chat()
-        visitor = visitor_class()
-        res = visitor.visit(parse_tree)
         json = res.get("json", [])
         kfile = []
         # cuando voy a generar parseo nuevamente el file, lo hago para poder generar el json y txt podados.
@@ -323,6 +314,16 @@ class Api(QObject):
             "ZIP files (*.zip)"
         )
         create_zip(selection,fuentes_dir , self.dir / "chat_exportado" )
+
+    @pyqtSlot(str,result='QVariant' )
+    def save_txt(self,txt):
+        with open(self.selected_chat, "w") as f:
+            for txt_msg in txt:
+                f.write(txt_msg)
+        res = parse_file(self.selected_chat)
+        print("eefe")
+        return {"json":res.get("json"), "res": True}
+
 flask_app = Flask(__name__)
 
 @flask_app.route("/")
