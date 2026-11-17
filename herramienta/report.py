@@ -424,7 +424,7 @@ def generateReport(perito, aportante, dispositivo, lista_hashes_multimedias_chat
     </html>
     """
     try:
-        ruta_completa = Path(ruta / "reporte")
+        ruta_completa = Path(ruta / "reporte.html")
         with open(ruta_completa, "w", encoding="utf-8") as f:
             f.write(html_reporte)
         return {"status": "success", "ruta": os.path.abspath("reporte")}
@@ -489,7 +489,7 @@ def funExportar(inner_html,ruta):
     </html>
         """
     try:
-        ruta_completa = Path(ruta / "chat_exportado")
+        ruta_completa = Path(ruta / "chat_exportado.html")
         with open(ruta_completa, "w", encoding="utf-8") as f:
             f.write(html_reporte)
         return {"status": "success", "ruta": os.path.abspath("chat_exportado")}
