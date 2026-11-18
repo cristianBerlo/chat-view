@@ -31,32 +31,34 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 | WhatsApp | Android | ✅ Disponible |
 | WhatsApp | iOS |  ✅ Disponible |
 
-## Instrucciones de uso
+# Instrucciones de uso
 
 1. Exportar la conversación.
-2. Abrir la aplicacion.
-3. Seleccionar aplicacion de origen del chat.
-4. Seleccionar el zip exportado.
+2. Abrir la aplicación.
+3. Seleccionar aplicación de origen del chat.
+4. Seleccionar el archivo ZIP exportado.
 
-   **Instrucciones para funcionalidades adicionales:**
-   
-**Filtrar por fechas:**
-5. Agregas periodos de interes.
-6. Recargar conversacion para mostrar los mensajes filtrados.
-7. Navegar entre periodos, haciendo click en ellos desde la lista de periodos.
-   
-**Agregar datos adicionales de los participantes:**
-4. (Seccion participantes) Agregar informacion adicional sobre los participantes de la conversacion (actor principal, nombres, etc).
-5. (Seccion participantes) Seleccionar actor principal.
-6. (Seccion chat) Recargar conversacion para ver los cambios.
-   
-  **Generar informe:**
-4. (Seccion informe) Agregar informacion sobre la causa, aportante, dispositivo y sobre el chat.
-5. (Seccion multimedia) Agregar multimedias relacionados que no se encontraban en la exportacion original.
-6.  (Seccion multimedia) Agregar una descripcion sobre que se agrego en los multimedia.
-7. (Seccion informe) Apretar generar reporte.
-8. Seleccionar carpeta destino y nombre para el reporte (archivo comprimido que conteniene todos los multimedias originales, multimedias agregados, capturas, conversacion exportada en html, reporte html y txt).
+---
 
+## Funcionalidades adicionales
+
+### Filtrar por fechas
+5. Agregar períodos de interés.
+6. Recargar la conversación para mostrar los mensajes filtrados.
+7. Navegar entre períodos haciendo clic en ellos desde la lista de períodos.
+
+### Agregar datos adicionales de los participantes
+4. Ir a la sección **Participantes** y agregar información adicional sobre los participantes de la conversación (actor principal, nombres, etc.).
+5. En la misma sección, seleccionar el actor principal.
+6. Ir a la sección **Chat** y recargar la conversación para ver los cambios.
+
+### Generar informe
+4. Ir a la sección **Informe** y agregar información sobre la causa, aportante, dispositivo y detalles del chat.
+5. Ir a la sección **Multimedia** para agregar archivos multimedia relacionados que no se encontraban en la exportación original.
+6. En la misma sección, agregar una descripción sobre qué se añadió en los archivos multimedia.
+7. Volver a la sección **Informe** y presionar **Generar reporte**.
+8. Seleccionar la carpeta de destino y el nombre para el archivo (se generará un archivo comprimido que contiene todos los archivos multimedia originales, los multimedia agregados, capturas de pantalla, la conversación exportada en HTML, y el reporte en formato HTML ).
+   
 Se pueden combinar los flujos adicionales,por ejemplo si genera un reporte habiendo periodos seleccionados la conversacion exportada, los multimedias originales y el txt van a contener unicamente los relvantes a los periodos seleccionados.
 
 ## Tecnologías utilizadas
