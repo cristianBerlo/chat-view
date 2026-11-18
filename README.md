@@ -19,8 +19,9 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 - Exportación del chat visualizado
 - Generacion de reportes:
     - Toma de datos referentes al aporte.
-    - Soporte para garegar capturas sobre el chat y los participantes.
-    - Soporte para adjuntar archivos multimedia adicionalles y una desprcione.
+    - Soporte para adjuntar capturas sobre el chat y los participantes.
+    - Soporte para adjuntar capturas sobre el dispositivo del cual se extrajo el chat.
+    - Soporte para adjuntar archivos multimedia adicionalles y una desprcion.
      -Calculo de hash de todos los archivos del chat y los suministrados para el reporte.
 
 ## Aplicaciones soportadas
@@ -32,11 +33,31 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 
 ## Instrucciones de uso
 
-### WhatsApp
-
-1. Exportar la conversación desde WhatsApp.
+1. Exportar la conversación.
 2. Abrir la aplicacion.
-3. Seleccionar el zip exportado.
+3. Seleccionar aplicacion de origen del chat.
+4. Seleccionar el zip exportado.
+
+   **Instrucciones para funcionalidades adicionales:**
+   
+**Filtrar por fechas:**
+5. Agregas periodos de interes.
+6. Recargar conversacion para mostrar los mensajes filtrados.
+7. Navegar entre periodos, haciendo click en ellos desde la lista de periodos.
+   
+**Agregar datos adicionales de los participantes:**
+4. (Seccion participantes) Agregar informacion adicional sobre los participantes de la conversacion (actor principal, nombres, etc).
+5. (Seccion participantes) Seleccionar actor principal.
+6. (Seccion chat) Recargar conversacion para ver los cambios.
+   
+  **Generar informe:**
+4. (Seccion informe) Agregar informacion sobre la causa, aportante, dispositivo y sobre el chat.
+5. (Seccion multimedia) Agregar multimedias relacionados que no se encontraban en la exportacion original.
+6.  (Seccion multimedia) Agregar una descripcion sobre que se agrego en los multimedia.
+7. (Seccion informe) Apretar generar reporte.
+8. Seleccionar carpeta destino y nombre para el reporte (archivo comprimido que conteniene todos los multimedias originales, multimedias agregados, capturas, conversacion exportada en html, reporte html y txt).
+
+Se pueden combinar los flujos adicionales,por ejemplo si genera un reporte habiendo periodos seleccionados la conversacion exportada, los multimedias originales y el txt van a contener unicamente los relvantes a los periodos seleccionados.
 
 ## Tecnologías utilizadas
 
