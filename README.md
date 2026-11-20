@@ -19,8 +19,9 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 - Exportación del chat visualizado
 - Generacion de reportes:
     - Toma de datos referentes al aporte.
-    - Soporte para garegar capturas sobre el chat y los participantes.
-    - Soporte para adjuntar archivos multimedia adicionalles y una desprcione.
+    - Soporte para adjuntar capturas sobre el chat y los participantes.
+    - Soporte para adjuntar capturas sobre el dispositivo del cual se extrajo el chat.
+    - Soporte para adjuntar archivos multimedia adicionalles y una desprcion.
      -Calculo de hash de todos los archivos del chat y los suministrados para el reporte.
 
 ## Aplicaciones soportadas
@@ -30,13 +31,35 @@ El problema es que el formato exportado —generalmente un archivo `.txt`— pre
 | WhatsApp | Android | ✅ Disponible |
 | WhatsApp | iOS |  ✅ Disponible |
 
-## Instrucciones de uso
+# Instrucciones de uso
 
-### WhatsApp
+1. Exportar la conversación.
+2. Abrir la aplicación.
+3. Seleccionar aplicación de origen del chat.
+4. Seleccionar el archivo ZIP exportado.
 
-1. Exportar la conversación desde WhatsApp.
-2. Abrir la aplicacion.
-3. Seleccionar el zip exportado.
+---
+
+## Funcionalidades adicionales
+
+### Filtrar por fechas
+5. Agregar períodos de interés.
+6. Recargar la conversación para mostrar los mensajes filtrados.
+7. Navegar entre períodos haciendo clic en ellos desde la lista de períodos.
+
+### Agregar datos adicionales de los participantes
+4. Ir a la sección **Participantes** y agregar información adicional sobre los participantes de la conversación (actor principal, nombres, etc.).
+5. En la misma sección, seleccionar el actor principal.
+6. Ir a la sección **Chat** y recargar la conversación para ver los cambios.
+
+### Generar informe
+4. Ir a la sección **Informe** y agregar información sobre la causa, aportante, dispositivo y detalles del chat.
+5. Ir a la sección **Multimedia** para agregar archivos multimedia relacionados que no se encontraban en la exportación original.
+6. En la misma sección, agregar una descripción sobre qué se añadió en los archivos multimedia.
+7. Volver a la sección **Informe** y presionar **Generar reporte**.
+8. Seleccionar la carpeta de destino y el nombre para el archivo (se generará un archivo comprimido que contiene todos los archivos multimedia originales, los multimedia agregados, capturas de pantalla, la conversación exportada en HTML, y el reporte en formato HTML ).
+   
+Se pueden combinar los flujos adicionales,por ejemplo si genera un reporte habiendo periodos seleccionados la conversacion exportada, los multimedias originales y el txt van a contener unicamente los relvantes a los periodos seleccionados.
 
 ## Tecnologías utilizadas
 
