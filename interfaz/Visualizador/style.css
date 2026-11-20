@@ -188,3 +188,15 @@ html {
     #status-message.show {
         opacity: 1;
     }
+
+mark.chat-search-hit {
+  background-color: #ffe58f;
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+mark.chat-search-hit.is-current {
+  background-color: #ff9c6e;
+  outline: 2px solid #d4380d;
+}

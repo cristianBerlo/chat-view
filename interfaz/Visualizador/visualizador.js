@@ -231,12 +231,19 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
         divUserPic.appendChild(divInitials);
         divPull.appendChild(divUserPic);
 
+
         if (principal) {
             divBg_white.classList.add('p-6', 'w-96', 'rounded-3xl', 'rounded-br-none', 'shadow-sm', 'mb-2');
             divBg_white.style.background = '#dcf8c6';
         } else {
             divBg_white.classList.add('bg-white', 'p-6', 'w-96', 'rounded-3xl', 'rounded-bl-none', 'shadow-sm', 'mb-2');
         }
+        let mb = document.createElement("p");
+        const isLargeNumber = (element) => element.nombre === nombre;
+        if(ArrayNameyText.findIndex(isLargeNumber) != -1){  // Acá tambien le doy valor al mensaje del sistema
+                    mb.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto;
+                    divBg_white.appendChild(mb);
+            }
         if (archivo != "") {
             const arrNyE = archivo.split('.');
             let punto = ".";
@@ -272,13 +279,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
             divBg_white.appendChild(a);
             textGray.textContent = 'Llamada perdida';
         } else {
-            let mb = document.createElement("p");
-            const isLargeNumber = (element) => element.nombre === nombre;
-            if(ArrayNameyText.findIndex(isLargeNumber) != -1){  // Acá tambien le doy valor al mensaje del sistema
-                    mb.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto;
-            }
             textGray.textContent = `${mensaje}`;
-            divBg_white.appendChild(mb);
         }
         divBg_white.appendChild(textGray);
 
@@ -649,26 +650,164 @@ document.getElementById('eliminarCapturaBtn').addEventListener('click', () => {
     },selectedParticipanteCapIndex,"capturas_"+nombre);
     }
 });
+(() => {
+  const container = document.getElementById('content-conversacion');
+  const inputEl = document.getElementById('tabSearchInput');
+  const counterEl = document.getElementById('tabSearchCounter');
+  const prevBtn = document.getElementById('tabSearchPrev');
+  const nextBtn = document.getElementById('tabSearchNext');
 
-function cleanN(nodo) {
-    const videos = nodo.querySelectorAll('video');
-    videos.forEach(v => {
-        v.pause();
-        v.src = "";
-        v.load();
+  if (!container || !inputEl || !counterEl || !prevBtn || !nextBtn) return;
+
+  let marks = [];
+  let currentIndex = -1;
+
+  function clearHighlights() {
+    const existingMarks = container.querySelectorAll('mark.chat-search-hit');
+    existingMarks.forEach((mark) => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      while (mark.firstChild) {
+        parent.insertBefore(mark.firstChild, mark);
+      }
+      parent.removeChild(mark);
+      parent.normalize();
     });
 
-    const audios = nodo.querySelectorAll('audio');
-    audios.forEach(a => {
-        a.pause();
-        a.src = "";
-        a.load();
+    marks = [];
+    currentIndex = -1;
+  }
+
+  function updateCounter() {
+    counterEl.textContent = marks.length ? `${currentIndex + 1}/${marks.length}` : '0/0';
+  }
+
+  function focusMatch(index, { scroll = true } = {}) {
+    if (!marks.length) {
+      currentIndex = -1;
+      updateCounter();
+      return;
+    }
+
+    if (currentIndex >= 0 && marks[currentIndex]) {
+      marks[currentIndex].classList.remove('is-current');
+    }
+
+    currentIndex = ((index % marks.length) + marks.length) % marks.length;
+    const targetMark = marks[currentIndex];
+    targetMark.classList.add('is-current');
+    updateCounter();
+
+    if (scroll) {
+      targetMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // shouldFocus: false al escribir para no sacar el foco del input de búsqueda
+  function performSearch({ shouldFocus = false } = {}) {
+    clearHighlights();
+
+    const query = inputEl.value.trim();
+    if (!query) {
+      updateCounter();
+      return;
+    }
+
+    const queryLower = query.toLocaleLowerCase();
+    const queryLen = query.length;
+
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue || !node.nodeValue.trim()) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        const parent = node.parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        if (
+          parent.closest('script, style, noscript, textarea, input, select, mark.chat-search-hit')
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
     });
 
-    const imagenes = nodo.querySelectorAll('img');
-    imagenes.forEach(img => {
-        img.src = "";
+    const textNodes = [];
+    let currentNode;
+    while ((currentNode = walker.nextNode())) {
+      textNodes.push(currentNode);
+    }
+
+    textNodes.forEach((textNode) => {
+      const text = textNode.nodeValue;
+      const textLower = text.toLocaleLowerCase();
+
+      let startPos = 0;
+      let matchIndex = textLower.indexOf(queryLower, startPos);
+      if (matchIndex === -1) return;
+
+      const fragment = document.createDocumentFragment();
+
+      while (matchIndex !== -1) {
+        if (matchIndex > startPos) {
+          fragment.appendChild(document.createTextNode(text.slice(startPos, matchIndex)));
+        }
+
+        const mark = document.createElement('mark');
+        mark.className = 'chat-search-hit';
+        mark.textContent = text.slice(matchIndex, matchIndex + queryLen);
+        fragment.appendChild(mark);
+        marks.push(mark);
+
+        startPos = matchIndex + queryLen;
+        matchIndex = textLower.indexOf(queryLower, startPos);
+      }
+
+      if (startPos < text.length) {
+        fragment.appendChild(document.createTextNode(text.slice(startPos)));
+      }
+
+      textNode.parentNode.replaceChild(fragment, textNode);
     });
-}
 
+    if (marks.length > 0) {
+      currentIndex = 0;
+      marks[0].classList.add('is-current');
+      updateCounter();
+      if (shouldFocus) {
+        focusMatch(0, { scroll: true });
+      }
+    } else {
+      updateCounter();
+    }
+  }
 
+  function stepMatch(delta) {
+    if (!marks.length) {
+      performSearch({ shouldFocus: true });
+      return;
+    }
+    focusMatch(currentIndex + delta, { scroll: true });
+  }
+
+  inputEl.addEventListener('input', () => {
+    performSearch({ shouldFocus: false });
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (!marks.length) {
+        performSearch({ shouldFocus: true });
+      } else {
+        stepMatch(e.shiftKey ? -1 : 1);
+      }
+    } else if (e.key === 'Escape') {
+      inputEl.value = '';
+      performSearch({ shouldFocus: false });
+    }
+  });
+
+  nextBtn.addEventListener('click', () => stepMatch(1));
+  prevBtn.addEventListener('click', () => stepMatch(-1));
+})();
