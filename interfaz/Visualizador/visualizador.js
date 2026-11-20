@@ -201,14 +201,7 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
 
         let mb = document.createElement("p");
         mb.classList.add('mb-1', 'text-sm', 'text-gray-700');
-
-        const isLargeNumber = (element) => element.nombre === nombre;
-        let index = ArrayNameyText.findIndex(isLargeNumber);
-        if (index != -1) {
-            mb.textContent = ArrayNameyText[index].texto;
-        } else {
-            mb.textContent = `${mensaje}`;
-        }
+        mb.textContent = `${mensaje}`;
         divBg_white.appendChild(mb);
 
     } else {
@@ -279,7 +272,13 @@ function MensajesDinamicos(chatFolderName, iniciales1, iniciales2, msjDelSistema
             divBg_white.appendChild(a);
             textGray.textContent = 'Llamada perdida';
         } else {
+            let mb = document.createElement("p");
+            const isLargeNumber = (element) => element.nombre === nombre;
+            if(ArrayNameyText.findIndex(isLargeNumber) != -1){  // Acá tambien le doy valor al mensaje del sistema
+                    mb.textContent = ArrayNameyText[ArrayNameyText.findIndex(isLargeNumber)].texto;
+            }
             textGray.textContent = `${mensaje}`;
+            divBg_white.appendChild(mb);
         }
         divBg_white.appendChild(textGray);
 
@@ -671,40 +670,5 @@ function cleanN(nodo) {
         img.src = "";
     });
 }
-
-/*
-const div_cont_chat = document.getElementById("idContenido");
-let isLoading  = false;
-
-div_cont_chat.addEventListener("scroll", async () => {
-    if (isLoading) return;
-    const top = div_cont_chat.scrollTop <= 50;
-    const bot = div_cont_chat.scrollTop + div_cont_chat.clientHeight >= div_cont_chat.scrollHeight - 50;
-
-    if (bot) {
-        isLoading = true;
-        const scrollHeightB = div_cont_chat.scrollHeight;
-        const scrollTopB = div_cont_chat.scrollTop;
-        await CargarMensajesFront(jsonPath, 100);
-        div_cont_chat.scrollTop = scrollTopB + (div_cont_chat.scrollHeight - scrollHeightB);
-        for (let x = 0; div_cont_chat.firstChild && x < 100; x++) {
-            const child = div_cont_chat.firstChild;
-            cleanN(child);
-            div_cont_chat.removeChild(child);
-        }
-        isLoading = false;
-    }
-    if (top) {
-        isLoading = true;
-        for (let x = 0; div_cont_chat.firstChild && x < 100; x++) {
-            const child = div_cont_chat.firstChild;
-            cleanN(child);
-            div_cont_chat.removeChild(child);
-            await CargarMensajesFront(jsonPath, -200);
-            isLoading = false;
-        }
-    }
-});*/
-
 
 
